@@ -1,0 +1,45 @@
+{{ $products := hugo.Data.products }}
+{{ $current := .Section }}
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="{{ "" | relURL }}" aria-label="InfraPI home">
+      {{ partial "logo.html" . }}
+      <span>InfraPI</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main">
+      <details class="menu">
+        <summary>Products</summary>
+        <div class="menu-panel">
+          {{ range $products.order }}{{ $p := index $products.items . }}
+          <a class="menu-item" href="{{ printf "%s/" . | relURL }}">
+            <span class="menu-icon">{{ partial "icon.html" $p.icon }}</span>
+            <span><strong>{{ $p.name }}</strong> {{ partial "status.html" $p }}<small>{{ $p.tagline }}</small></span>
+          </a>
+          {{ end }}
+          <a class="menu-item menu-item--muted" href="{{ "roadmap/" | relURL }}">
+            <span class="menu-icon">{{ partial "icon.html" "telescope" }}</span>
+            <span><strong>Roadmap</strong><small>What we are building next.</small></span>
+          </a>
+        </div>
+      </details>
+      <details class="menu">
+        <summary>Docs</summary>
+        <div class="menu-panel menu-panel--narrow">
+          {{ range $products.order }}{{ $p := index $products.items . }}
+          <a class="menu-item" href="{{ printf "%s/docs/" . | relURL }}"><span><strong>{{ $p.name }}</strong><small>Reference and guides</small></span></a>
+          {{ end }}
+        </div>
+      </details>
+      <a href="{{ "learn/" | relURL }}" {{ if eq $current "learn" }}aria-current="page"{{ end }}>Learn</a>
+      <a href="{{ "services/" | relURL }}" {{ if eq $current "services" }}aria-current="page"{{ end }}>Services</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="search-trigger" type="button" data-search-open aria-label="Search">
+        {{ partial "icon.html" "search" }}<span>Search</span><kbd>/</kbd>
+      </button>
+      <a class="icon-link" href="{{ site.Params.github }}" aria-label="InfraPI on GitHub">{{ partial "icon.html" "github" }}</a>
+    </div>
+  </div>
+</header>

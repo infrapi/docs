@@ -1,0 +1,41 @@
+# One entry per product. Drives the landing page, the navigation, the hub
+# pages and the docs pages' "edit on GitHub" links.
+order: [kayra, tofu-api, lib]
+
+items:
+  kayra:
+    name: Kayra
+    repo: infrapi/kayra
+    branch: main
+    version: v0.3
+    status: preview
+    icon: shield
+    tagline: Identity, namespaces and RBAC for your platform.
+    summary: Who callers are, which tenant they act in, what they may do there, and which APIs each tenant is subscribed to.
+
+  tofu-api:
+    name: tofu-api
+    repo: infrapi/tofu-api
+    branch: main
+    version: v0.6
+    status: early
+    icon: api
+    tagline: Any OpenTofu provider as a REST API.
+    summary: An OpenAPI contract generated from the provider's schemas, rules in one YAML file per provider, no code per resource.
+
+  lib:
+    name: lib
+    repo: infrapi/lib
+    branch: main
+    version: v0.11
+    status: preview
+    icon: blocks
+    tagline: The Go foundation of every InfraPI service.
+    summary: URL layout, auth, contract enforcement, RFC 9457 errors, metrics, tracing and Vault, shared by every service.
+
+# Shown as "coming next" on the landing page and the roadmap.
+# TODO(infrapi): the real future projects.
+next:
+  - name: Next project
+    stage: exploring
+    summary: What it does, for whom, in one sentence.

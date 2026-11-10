@@ -1,0 +1,12 @@
+<section class="cta">
+  <div class="wrap cta-inner">
+    <div>
+      <h2>{{ .title | default "Build your platform with us" }}</h2>
+      <p>{{ .text | default "From a first self-service API to a full platform: assessment, implementation and support from the people who build InfraPI." }}</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn--primary" href="{{ "services/" | relURL }}">Talk to us {{ partial "icon.html" "arrow" }}</a>
+      <a class="btn btn--ghost" href="{{ "learn/" | relURL }}">Start learning</a>
+    </div>
+  </div>
+</section>

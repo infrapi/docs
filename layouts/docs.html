@@ -1,0 +1,69 @@
+{{ define "bodyclass" }}docs{{ end }}
+{{ define "main" }}
+{{ $slug := .Section }}
+{{ $p := index hugo.Data.products.items $slug }}
+{{ $entries := partial "docs-tree.html" $slug }}
+{{ $flat := slice }}
+{{ range $entries }}{{ with .page }}{{ $flat = $flat | append . }}{{ else }}{{ range .pages }}{{ $flat = $flat | append . }}{{ end }}{{ end }}{{ end }}
+
+<div class="docs-layout">
+  <aside class="docs-sidebar" aria-label="{{ $p.name }} documentation">
+    <details class="docs-nav" open data-docs-nav>
+      <summary class="docs-nav-head">
+        <span class="menu-icon">{{ partial "icon.html" $p.icon }}</span>
+        <span><strong>{{ $p.name }}</strong> {{ partial "status.html" $p }}</span>
+        <span class="docs-nav-toggle">{{ partial "icon.html" "menu" }}</span>
+      </summary>
+      <a class="docs-nav-hub" href="{{ printf "%s/" $slug | relURL }}">{{ partial "icon.html" "arrow" }} Product overview</a>
+      <nav>
+        <ul>
+          {{ range $entries }}
+            {{ with .page }}
+            <li><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ if .IsSection }}Overview{{ else }}{{ .Title }}{{ end }}</a></li>
+            {{ else }}
+            {{ $open := false }}{{ range .pages }}{{ if eq . $ }}{{ $open = true }}{{ end }}{{ end }}
+            <li class="docs-group">
+              <details{{ if or $open (le (len .pages) 6) }} open{{ end }}>
+                <summary>{{ .group }}</summary>
+                <ul>
+                  {{ range .pages }}<li><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ .Title }}</a></li>{{ end }}
+                </ul>
+              </details>
+            </li>
+            {{ end }}
+          {{ end }}
+        </ul>
+      </nav>
+    </details>
+  </aside>
+
+  <article class="docs-article">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="{{ printf "%s/" $slug | relURL }}">{{ $p.name }}</a><span>/</span>
+      <a href="{{ printf "%s/docs/" $slug | relURL }}">Docs</a>
+    </nav>
+    <div class="prose">
+      {{ .Content }}
+    </div>
+
+    {{ $rel := strings.TrimPrefix (printf "%s/docs/" $slug) .File.Path }}
+    {{ if eq $rel "_index.md" }}{{ $rel = "index.md" }}{{ end }}
+    <footer class="docs-footer">
+      <a class="muted" href="https://github.com/{{ $p.repo }}/blob/{{ $p.branch }}/docs/{{ $rel }}">{{ partial "icon.html" "github" }} Edit this page on GitHub</a>
+      <div class="pager">
+        {{ range $i, $pg := $flat }}{{ if eq $pg $ }}
+          {{ if gt $i 0 }}{{ with index $flat (sub $i 1) }}<a class="pager-link" href="{{ .RelPermalink }}"><small>Previous</small>{{ if .IsSection }}Overview{{ else }}{{ .Title }}{{ end }}</a>{{ end }}{{ else }}<span></span>{{ end }}
+          {{ if lt (add $i 1) (len $flat) }}{{ with index $flat (add $i 1) }}<a class="pager-link pager-link--next" href="{{ .RelPermalink }}"><small>Next</small>{{ .Title }}</a>{{ end }}{{ end }}
+        {{ end }}{{ end }}
+      </div>
+    </footer>
+  </article>
+
+  {{ with .TableOfContents }}{{ if ne . `<nav id="TableOfContents"></nav>` }}
+  <aside class="docs-toc" aria-label="On this page">
+    <p class="eyebrow">On this page</p>
+    {{ . }}
+  </aside>
+  {{ end }}{{ end }}
+</div>
+{{ end }}

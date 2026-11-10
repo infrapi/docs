@@ -1,0 +1,37 @@
+{{- /*
+  The ordered navigation of one product's docs, from the files alone:
+  pages by their front matter weight; a subfolder (architecture/, packages/)
+  is a group whose pages keep their own weights. Following the repos'
+  convention, a group takes the first slot (10, 20, ...) the root pages leave
+  free, in folder-name order; with none free it goes last.
+
+  Returns a slice of (dict "weight" "page") or (dict "weight" "group" "pages").
+*/ -}}
+{{- $slug := . -}}
+{{- $root := site.GetPage (printf "/%s/docs" $slug) -}}
+{{- $entries := slice -}}
+{{- with $root -}}
+  {{- $prefix := printf "%s/docs/" $slug -}}
+  {{- $rootWeight := .Weight | default 10 -}}
+  {{- $weights := slice $rootWeight -}}
+  {{- $entries = $entries | append (dict "weight" $rootWeight "page" .) -}}
+  {{- $groups := dict -}}
+  {{- range .RegularPages.ByWeight -}}
+    {{- $rel := strings.TrimPrefix $prefix .File.Dir -}}
+    {{- if eq $rel "" -}}
+      {{- $weights = $weights | append .Weight -}}
+      {{- $entries = $entries | append (dict "weight" .Weight "page" .) -}}
+    {{- else -}}
+      {{- $name := index (split $rel "/") 0 -}}
+      {{- $groups = merge $groups (dict $name ((index $groups $name | default (slice)) | append .)) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $next := 10 -}}
+  {{- range $name, $pages := $groups -}}
+    {{- /* first multiple of 10 no root page uses; past the last one if none is free */ -}}
+    {{- range seq 1 100 -}}{{- if in $weights $next -}}{{ $next = add $next 10 }}{{- end -}}{{- end -}}
+    {{- $weights = $weights | append $next -}}
+    {{- $entries = $entries | append (dict "weight" $next "group" (humanize $name) "pages" $pages) -}}
+  {{- end -}}
+{{- end -}}
+{{- return (sort $entries "weight") -}}

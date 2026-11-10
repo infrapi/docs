@@ -1,0 +1,10 @@
+# product docs: checkouts (CI, make fetch) or symlinks (make link), never committed
+/_repos/
+# build output
+/public/
+/resources/
+/.hugo_build.lock
+/.venv/
+# left over from the former MkDocs scaffold
+/docs/
+/_patches/

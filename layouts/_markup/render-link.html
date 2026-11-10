@@ -1,0 +1,49 @@
+{{- /*
+  Links in project docs are written for github.com: relative .md paths
+  (../architecture/rbac-and-auth.md#section) and, between projects, URLs of
+  the old per-project sites (https://infrapi.github.io/lib/packages/server/).
+  Both are resolved to the portal's pages here, and checked: an unknown page
+  or anchor is a warning, which CI turns into an error (--panicOnWarning).
+*/ -}}
+{{- $dest := .Destination -}}
+{{- $href := $dest -}}
+{{- $u := urls.Parse $dest -}}
+{{- $frag := cond (ne $u.Fragment "") (printf "#%s" $u.Fragment) "" -}}
+{{- $external := false -}}
+{{- $target := false -}}
+{{- $products := hugo.Data.products.items -}}
+
+{{- if and (eq $u.Host site.Params.legacyHost) (in (slice "http" "https") $u.Scheme) -}}
+  {{- /* https://infrapi.github.io/<slug>/<page>/ → /<slug>/docs/<page>/ */ -}}
+  {{- $parts := split (strings.Trim $u.Path "/") "/" -}}
+  {{- $slug := index $parts 0 -}}
+  {{- if index $products $slug -}}
+    {{- $tail := strings.Trim (delimit (after 1 $parts) "/") "/" -}}
+    {{- $path := cond (eq $tail "") (printf "/%s/docs" $slug) (printf "/%s/docs/%s" $slug $tail) -}}
+    {{- with site.GetPage $path -}}{{ $target = . }}{{- else -}}
+      {{- warnf "%s: link to %s: no page %s in the portal" $.Page.File.Path $dest $path -}}
+    {{- end -}}
+  {{- else -}}{{ $external = true }}{{- end -}}
+
+{{- else if or $u.Scheme $u.Host -}}
+  {{- $external = true -}}
+
+{{- else if strings.HasSuffix $u.Path ".md" -}}
+  {{- /* relative to the page's own file, as on GitHub */ -}}
+  {{- $file := path.Join $.Page.File.Dir $u.Path -}}
+  {{- $logical := strings.TrimPrefix "/" (strings.TrimSuffix ".md" $file) -}}
+  {{- if in (slice "index" "_index") (path.Base $logical) -}}{{ $logical = path.Dir $logical }}{{- end -}}
+  {{- with site.GetPage (printf "/%s" $logical) -}}{{ $target = . }}{{- else -}}
+    {{- warnf "%s: link to %s: no page %s" $.Page.File.Path $dest $file -}}
+  {{- end -}}
+{{- end -}}
+
+{{- with $target -}}
+  {{- $href = printf "%s%s" .RelPermalink $frag -}}
+  {{- if and $u.Fragment (not (in .Fragments.Identifiers $u.Fragment)) -}}
+    {{- warnf "%s: link to %s: %s has no heading #%s" $.Page.File.Path $dest .File.Path $u.Fragment -}}
+  {{- end -}}
+{{- end -}}
+
+<a href="{{ $href | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if $external }} rel="noopener"{{ end }}>{{ .Text }}</a>
+{{- /* chomp trailing newline */ -}}

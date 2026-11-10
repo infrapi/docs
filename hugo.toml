@@ -1,0 +1,73 @@
+baseURL = "https://infrapi.github.io/docs/"
+title = "InfraPI"
+locale = "en"
+disableKinds = ["taxonomy", "term", "rss"]
+
+[params]
+  description = "Build your internal developer platform as APIs: tenancy, RBAC and any infrastructure product behind one consistent, contract-first REST surface."
+  github = "https://github.com/infrapi"
+  # Where each project's own MkDocs site lived. Links into it, e.g. from Kayra
+  # to https://infrapi.github.io/lib/packages/server/, are rewritten to the
+  # portal's copy by layouts/_markup/render-link.html.
+  legacyHost = "infrapi.github.io"
+  contact = "contact@example.com"  # TODO(infrapi): real contact address
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true                   # <details>/<summary> in project docs
+  [markup.goldmark.parser]
+    autoHeadingIDType = "github"    # same anchors as on github.com
+  [markup.highlight]
+    noClasses = false               # colours come from assets/css/chroma.css
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+[outputFormats.searchindex]
+  mediaType = "application/json"
+  baseName = "search-index"
+  isPlainText = true
+  notAlternative = true
+
+[outputs]
+  home = ["html", "searchindex"]
+
+# ---------------------------------------------------------------------------
+# Project docs. Each repository keeps its docs in its own docs/ folder; they
+# are mounted here, never copied. _repos/<name> is a checkout of the
+# repository: CI clones it, `make link` symlinks your local checkouts.
+#
+# Per project: docs/ minus index.md, then index.md as the docs section's
+# _index.md (Hugo needs that name; GitHub needs index.md).
+# Adding a project: these two mounts, an entry in data/products.yaml, and
+# content/<slug>/_index.md for its hub page.
+# ---------------------------------------------------------------------------
+
+[module]
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+
+  [[module.mounts]]
+    source = "_repos/kayra/docs"
+    target = "content/kayra/docs"
+    files = ["! index.md", "! assets/**"]
+  [[module.mounts]]
+    source = "_repos/kayra/docs/index.md"
+    target = "content/kayra/docs/_index.md"
+
+  [[module.mounts]]
+    source = "_repos/tofu-api/docs"
+    target = "content/tofu-api/docs"
+    files = ["! index.md", "! assets/**"]
+  [[module.mounts]]
+    source = "_repos/tofu-api/docs/index.md"
+    target = "content/tofu-api/docs/_index.md"
+
+  [[module.mounts]]
+    source = "_repos/lib/docs"
+    target = "content/lib/docs"
+    files = ["! index.md", "! assets/**"]
+  [[module.mounts]]
+    source = "_repos/lib/docs/index.md"
+    target = "content/lib/docs/_index.md"

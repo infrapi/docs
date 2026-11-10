@@ -1,0 +1,24 @@
+{{ define "bodyclass" }}learn{{ end }}
+{{ define "main" }}
+{{ $products := hugo.Data.products }}
+<section class="page-hero">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap">
+    <p class="eyebrow">Learn</p>
+    <h1>{{ .Title }}</h1>
+    <p class="lead">{{ .Description }}</p>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="filters" role="group" aria-label="Filter by product" data-filters>
+      <button type="button" class="filter" aria-pressed="true" data-filter="">All</button>
+      {{ range $products.order }}<button type="button" class="filter" aria-pressed="false" data-filter="{{ . }}">{{ (index $products.items .).name }}</button>{{ end }}
+    </div>
+    <div class="card-grid card-grid--3" data-filter-target>
+      {{ range .Pages.ByWeight }}{{ partial "tutorial-card.html" . }}{{ end }}
+    </div>
+    <p class="muted filter-empty" data-filter-empty hidden>No tutorial for this product yet. <a href="{{ "services/" | relURL }}#contact">Tell us what you need.</a></p>
+  </div>
+</section>
+{{ end }}

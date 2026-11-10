@@ -1,0 +1,29 @@
+{{ define "bodyclass" }}learn tutorial{{ end }}
+{{ define "main" }}
+{{ $products := hugo.Data.products.items }}
+<section class="page-hero page-hero--tutorial">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ "learn/" | relURL }}">Learn</a><span>/</span></nav>
+    <h1>{{ .Title }}</h1>
+    <p class="lead">{{ .Description }}</p>
+    <div class="chips">
+      {{ range .Params.products }}<a class="chip" href="{{ printf "%s/" . | relURL }}">{{ (index $products .).name }}</a>{{ end }}
+      {{ with .Params.level }}<span class="chip chip--muted">{{ . }}</span>{{ end }}
+      {{ with .Params.duration }}<span class="chip chip--muted">{{ partial "icon.html" "clock" }} {{ . }}</span>{{ end }}
+    </div>
+  </div>
+</section>
+<div class="tutorial-layout wrap">
+  <article class="prose">
+    {{ .Content }}
+  </article>
+  {{ with .TableOfContents }}
+  <aside class="docs-toc" aria-label="Steps">
+    <p class="eyebrow">Steps</p>
+    {{ . }}
+  </aside>
+  {{ end }}
+</div>
+{{ partial "cta.html" (dict "title" "Want this in your platform?" "text" "We can set up tofu-api and Kayra in front of your products, with your identity provider and Vault.") }}
+{{ end }}

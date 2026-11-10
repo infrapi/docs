@@ -1,0 +1,13 @@
+{{- /* GitHub alerts (> [!NOTE], > [!WARNING], ...) as callouts; other blockquotes as is. */ -}}
+{{- if eq .Type "alert" -}}
+{{- $type := lower .AlertType -}}
+{{- $labels := dict "note" "Note" "tip" "Tip" "important" "Important" "warning" "Warning" "caution" "Caution" -}}
+<div class="callout callout--{{ $type }}" role="note">
+  <p class="callout-label">{{ .AlertTitle | default (index $labels $type) | default (title $type) }}</p>
+  {{ .Text }}
+</div>
+{{- else -}}
+<blockquote>
+  {{ .Text }}
+</blockquote>
+{{- end -}}

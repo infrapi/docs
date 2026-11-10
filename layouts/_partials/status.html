@@ -1,0 +1,2 @@
+{{- /* A product's version and maturity: (dict version status) from data/products.yaml. */ -}}
+<span class="status status--{{ .status }}">{{ .version }}{{ if eq .status "early" }} · early{{ end }}</span>

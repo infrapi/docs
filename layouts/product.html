@@ -1,0 +1,106 @@
+{{ define "bodyclass" }}hub{{ end }}
+{{ define "main" }}
+{{ $slug := .Section }}
+{{ $p := index hugo.Data.products.items $slug }}
+{{ $entries := partial "docs-tree.html" $slug }}
+{{ $docs := site.GetPage (printf "/%s/docs" $slug) }}
+{{ $start := $docs }}{{ with .Params.start }}{{ with site.GetPage (printf "/%s/docs/%s" $slug .) }}{{ $start = . }}{{ end }}{{ end }}
+
+<section class="hub-hero">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ "" | relURL }}#products">Products</a><span>/</span></nav>
+    <div class="hub-title">
+      <span class="hub-icon">{{ partial "icon.html" $p.icon }}</span>
+      <h1>{{ $p.name }}</h1>
+      {{ partial "status.html" $p }}
+    </div>
+    <p class="lead">{{ .Params.headline | default $p.tagline }}</p>
+    <p class="hub-summary">{{ .Description }}</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="{{ $start.RelPermalink }}">Get started {{ partial "icon.html" "arrow" }}</a>
+      <a class="btn" href="{{ $docs.RelPermalink }}">Documentation</a>
+      <a class="btn btn--ghost" href="https://github.com/{{ $p.repo }}">{{ partial "icon.html" "github" }} {{ $p.repo }}</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">The problem</p>
+      <h2>Why {{ $p.name }}</h2>
+      <ul class="problem-list">
+        {{ range .Params.problems }}<li>{{ . | markdownify }}</li>{{ end }}
+      </ul>
+    </div>
+    <div class="feature-grid">
+      {{ range .Params.features }}
+      <div class="feature">
+        <h3>{{ .title }}</h3>
+        <p>{{ .text | markdownify }}</p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+{{ with .Content }}
+<section class="section section--tight">
+  <div class="wrap prose prose--narrow">{{ . }}</div>
+</section>
+{{ end }}
+
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">Documentation</p>
+    <h2>Find your way around</h2>
+    <div class="card-grid card-grid--3">
+      {{ range $entries }}
+        {{ with .page }}{{ if not .IsSection }}
+        <a class="card card--link" href="{{ .RelPermalink }}">
+          <h3>{{ .Title }}</h3>
+          <p>{{ .Description }}</p>
+        </a>
+        {{ end }}{{ else }}
+        {{ $first := index .pages 0 }}
+        <a class="card card--link" href="{{ $first.RelPermalink }}">
+          <h3>{{ .group }} <span class="count">{{ len .pages }}</span></h3>
+          <p>{{ range $i, $pg := first 4 .pages }}{{ if $i }} · {{ end }}{{ $pg.Title }}{{ end }}{{ if gt (len .pages) 4 }} …{{ end }}</p>
+        </a>
+        {{ end }}
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+{{ $tutorials := where (where site.RegularPages "Section" "learn") "Params.products" "intersect" (slice $slug) }}
+{{ with $tutorials }}
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">Learn</p>
+    <h2>Tutorials</h2>
+    <div class="card-grid card-grid--3">
+      {{ range . }}{{ partial "tutorial-card.html" . }}{{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}
+
+<section class="section">
+  <div class="wrap split split--facts">
+    <div>
+      <p class="eyebrow">Status</p>
+      <h2>At a glance</h2>
+    </div>
+    <dl class="facts">
+      <div><dt>Version</dt><dd>{{ $p.version }}{{ if eq $p.status "early" }} — early stage{{ else }} — pre-1.0, APIs may change{{ end }}</dd></div>
+      {{ range .Params.facts }}<div><dt>{{ .k }}</dt><dd>{{ .v | markdownify }}</dd></div>{{ end }}
+      <div><dt>License</dt><dd>MIT</dd></div>
+      <div><dt>Source</dt><dd><a href="https://github.com/{{ $p.repo }}">github.com/{{ $p.repo }}</a></dd></div>
+    </dl>
+  </div>
+</section>
+
+{{ partial "cta.html" (dict "title" (printf "Rolling out %s?" $p.name) "text" .Params.help) }}
+{{ end }}

@@ -1,0 +1,9 @@
+<dialog class="search" data-search aria-label="Search">
+  <form method="dialog" class="search-box">
+    {{ partial "icon.html" "search" }}
+    <input type="search" placeholder="Search products, docs and tutorials" autocomplete="off" spellcheck="false" data-search-input aria-label="Search query">
+    <button type="submit" class="search-close" aria-label="Close"><kbd>esc</kbd></button>
+  </form>
+  <ul class="search-results" data-search-results role="listbox"></ul>
+  <p class="search-empty muted" data-search-empty hidden>No results.</p>
+</dialog>

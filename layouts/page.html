@@ -1,0 +1,15 @@
+{{ define "main" }}
+<section class="page-hero">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap">
+    {{ with .Params.eyebrow }}<p class="eyebrow">{{ . }}</p>{{ end }}
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="lead">{{ . }}</p>{{ end }}
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="wrap prose prose--narrow">
+    {{ .Content }}
+  </div>
+</section>
+{{ end }}

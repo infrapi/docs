@@ -1,0 +1,212 @@
+{{ define "bodyclass" }}home{{ end }}
+{{ define "main" }}
+{{ $products := hugo.Data.products }}
+
+<section class="hero">
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="glow glow--hero" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <a class="pill" href="{{ site.Params.github }}">
+        <span class="pill-dot"></span> Open source · MIT · Internal developer platform
+      </a>
+      <h1>Self-service infrastructure, <span class="accent-text">as&nbsp;APIs.</span></h1>
+      <p class="lead">{{ .Params.lead }}</p>
+      <div class="actions">
+        <a class="btn btn--primary" href="#products">Explore the products {{ partial "icon.html" "arrow" }}</a>
+        <a class="btn" href="{{ "learn/" | relURL }}">Start learning</a>
+        <a class="btn btn--ghost" href="{{ "services/" | relURL }}">Talk to us</a>
+      </div>
+    </div>
+
+    <div class="terminal" role="img" aria-label="Example: creating an EC2 instance through tofu-api with one HTTP call">
+      <div class="terminal-bar"><span></span><span></span><span></span><p>tofu-api · aws</p></div>
+<pre><code><span class="t-mute"># one YAML file per provider, no code per resource</span>
+<span class="t-prompt">$</span> tofu-api serve -config aws.yaml
+
+<span class="t-prompt">$</span> curl -X POST \
+    localhost:8080/aws/v1/namespaces/<span class="t-accent">acme</span>/instance \
+    -H 'Authorization: Bearer …' \
+    -d '{"ami": "ami-0abc12de", "instance_type": "t3.micro"}'
+
+<span class="t-ok">201 Created</span>
+{
+  "id": "<span class="t-accent">i-0f3c9a1e2b4d5e6f7</span>",
+  "ami": "ami-0abc12de",
+  "instance_type": "t3.micro",
+  "private_ip": "10.0.1.23",
+  …
+}<span class="cursor" aria-hidden="true"></span></code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="strip">
+  <div class="wrap strip-inner">
+    <span class="muted">One consistent surface for every API</span>
+    <code>/apis/{group}/{version}/namespaces/{ns}/{resource}</code>
+    <span class="strip-sep" aria-hidden="true"></span>
+    <span class="muted">OpenAPI enforced</span>
+    <span class="strip-sep" aria-hidden="true"></span>
+    <span class="muted">RFC 9457 errors</span>
+    <span class="strip-sep" aria-hidden="true"></span>
+    <span class="muted">Prometheus · OpenTelemetry</span>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">The problem</p>
+    <h2 class="section-title">Platform teams drown in tickets and one-off integrations</h2>
+    <div class="card-grid card-grid--3">
+      {{ range .Params.problems }}
+      <div class="card card--problem">
+        <span class="card-icon">{{ partial "icon.html" .icon }}</span>
+        <h3>{{ .title }}</h3>
+        <p>{{ .text }}</p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how-it-fits">
+  <div class="wrap">
+    <p class="eyebrow">How it fits together</p>
+    <h2 class="section-title">Composable layers, adopted one at a time</h2>
+    <div class="arch" role="img" aria-label="Architecture: callers reach InfraPI APIs with a bearer token; APIs ask Kayra for authorization; tofu-api drives existing products through their OpenTofu providers; lib is the foundation of every service.">
+      <div class="arch-row">
+        <div class="arch-label">Callers</div>
+        <div class="arch-boxes">
+          <div class="arch-box arch-box--muted">Portal</div>
+          <div class="arch-box arch-box--muted">CLI</div>
+          <div class="arch-box arch-box--muted">CI / CD</div>
+          <div class="arch-box arch-box--muted">Scripts</div>
+        </div>
+      </div>
+      <div class="arch-link"><span>bearer token · REST · OpenAPI</span></div>
+      <div class="arch-row">
+        <div class="arch-label">APIs</div>
+        <div class="arch-boxes arch-boxes--apis">
+          <a class="arch-box arch-box--product" href="{{ "tofu-api/" | relURL }}"><strong>tofu-api</strong><small>any OpenTofu provider as REST</small></a>
+          <div class="arch-box"><strong>Your services</strong><small>built on lib</small></div>
+          <span class="arch-side" aria-hidden="true">may this caller do this?</span>
+          <a class="arch-box arch-box--product arch-box--kayra" href="{{ "kayra/" | relURL }}"><strong>Kayra</strong><small>identity · namespaces · RBAC · API catalog</small></a>
+        </div>
+      </div>
+      <div class="arch-link"><span>provider plugin protocol · credentials per namespace from Vault</span></div>
+      <div class="arch-row">
+        <div class="arch-label">Products</div>
+        <div class="arch-boxes">
+          <div class="arch-box arch-box--muted">AWS</div>
+          <div class="arch-box arch-box--muted">Grafana</div>
+          <div class="arch-box arch-box--muted">…any provider</div>
+        </div>
+      </div>
+      <a class="arch-foundation" href="{{ "lib/" | relURL }}"><strong>lib</strong> — the shared Go foundation under every service: URL layout, auth, contracts, errors, metrics, tracing, Vault</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="products">
+  <div class="wrap">
+    <p class="eyebrow">Products</p>
+    <h2 class="section-title">Each one stands alone. Together, they are a platform.</h2>
+    <div class="card-grid card-grid--products">
+      {{ range $products.order }}{{ $p := index $products.items . }}
+      <article class="card card--product">
+        <div class="card-head">
+          <span class="card-icon">{{ partial "icon.html" $p.icon }}</span>
+          <h3><a href="{{ printf "%s/" . | relURL }}">{{ $p.name }}</a></h3>
+          {{ partial "status.html" $p }}
+        </div>
+        <p class="card-tagline">{{ $p.tagline }}</p>
+        <p>{{ $p.summary }}</p>
+        <div class="card-links">
+          <a href="{{ printf "%s/" . | relURL }}">Overview</a>
+          <a href="{{ printf "%s/docs/" . | relURL }}">Docs</a>
+          <a href="https://github.com/{{ $p.repo }}">GitHub</a>
+        </div>
+      </article>
+      {{ end }}
+      <article class="card card--next">
+        <div class="card-head">
+          <span class="card-icon">{{ partial "icon.html" "telescope" }}</span>
+          <h3><a href="{{ "roadmap/" | relURL }}">Coming next</a></h3>
+        </div>
+        <p>What we are building to complete the platform — and how to tell us what you need.</p>
+        <div class="card-links"><a href="{{ "roadmap/" | relURL }}">Roadmap</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2 class="section-title">From a Terraform provider to a governed API in three steps</h2>
+    <ol class="steps">
+      {{ range $i, $s := .Params.steps }}
+      <li class="step">
+        <span class="step-n">0{{ add $i 1 }}</span>
+        <h3>{{ $s.title }}</h3>
+        <p>{{ $s.text }}</p>
+        {{ highlight $s.code $s.lang "" }}
+      </li>
+      {{ end }}
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">Why InfraPI</p>
+    <h2 class="section-title">Built for platform teams who run their own infrastructure</h2>
+    <div class="card-grid card-grid--4">
+      {{ range .Params.why }}
+      <div class="card">
+        <span class="card-icon">{{ partial "icon.html" .icon }}</span>
+        <h3>{{ .title }}</h3>
+        <p>{{ .text }}</p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+{{ with where site.RegularPages "Section" "learn" }}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Learn</p>
+        <h2 class="section-title">Hands-on tutorials</h2>
+      </div>
+      <a class="btn btn--ghost" href="{{ "learn/" | relURL }}">All tutorials {{ partial "icon.html" "arrow" }}</a>
+    </div>
+    <div class="card-grid card-grid--3">
+      {{ range first 3 .ByWeight }}{{ partial "tutorial-card.html" . }}{{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}
+
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">Adopt it your way</p>
+    <h2 class="section-title">Open source first. Help when you want it.</h2>
+    <div class="card-grid card-grid--3 tiers">
+      {{ range .Params.tiers }}
+      <div class="card tier{{ if .featured }} tier--featured{{ end }}">
+        <h3>{{ .title }}</h3>
+        <p class="tier-price">{{ .price }}</p>
+        <ul class="checks">{{ range .items }}<li>{{ partial "icon.html" "check" }}{{ . }}</li>{{ end }}</ul>
+        <a class="btn{{ if .featured }} btn--primary{{ end }}" href="{{ .url | relURL }}">{{ .cta }}</a>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+{{ partial "cta.html" (dict) }}
+{{ end }}

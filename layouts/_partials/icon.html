@@ -1,0 +1,21 @@
+{{- /* Inline stroke icons (24x24, currentColor). Usage: partial "icon.html" "name" */ -}}
+{{- $paths := dict
+  "shield"    `<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/>`
+  "api"       `<path d="M8 4H6a2 2 0 0 0-2 2v4l-2 2 2 2v4a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v4l2 2-2 2v4a2 2 0 0 1-2 2h-2"/><path d="M10 12h4"/>`
+  "blocks"    `<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/>`
+  "telescope" `<path d="M3 13l12-6 2 4-12 6z"/><path d="M15 7l3-1.5 2 4L17 11"/><path d="M9 16l-2 5M11 15l2 6"/>`
+  "search"    `<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>`
+  "github"    `<path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 0 0-6 0C6.6 2.5 5.6 2.8 5.6 2.8a4.3 4.3 0 0 0-.1 3.2A4.6 4.6 0 0 0 4.2 9.2c0 4.7 2.8 5.7 5.5 6a3 3 0 0 0-.8 2.3V21"/>`
+  "arrow"     `<path d="M5 12h14M13 6l6 6-6 6"/>`
+  "contract"  `<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 14l2 2 4-4"/>`
+  "tenants"   `<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20a5.5 5.5 0 0 1 11 0M14 20a4 4 0 0 1 7.5-2"/>`
+  "puzzle"    `<path d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4h2a2 2 0 1 0 0-4H6V6h4z"/>`
+  "server"    `<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>`
+  "ticket"    `<path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z" transform="translate(0 2)"/><path d="M13 6v12" stroke-dasharray="2 2"/>`
+  "copy"      `<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>`
+  "check"     `<path d="M5 12l5 5 9-10"/>`
+  "book"      `<path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/>`
+  "clock"     `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>`
+  "menu"      `<path d="M4 7h16M4 12h16M4 17h16"/>`
+-}}
+<svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ index $paths . | default "" | safeHTML }}</svg>

@@ -1,0 +1,10 @@
+{{ $products := hugo.Data.products.items }}
+<a class="card card--link card--tutorial" href="{{ .RelPermalink }}" data-products="{{ delimit (.Params.products | default (slice)) " " }}">
+  <div class="chips">
+    {{ range .Params.products }}<span class="chip">{{ (index $products .).name }}</span>{{ end }}
+    {{ with .Params.level }}<span class="chip chip--muted">{{ . }}</span>{{ end }}
+  </div>
+  <h3>{{ .Title }}</h3>
+  <p>{{ .Description }}</p>
+  {{ with .Params.duration }}<span class="meta">{{ partial "icon.html" "clock" }} {{ . }}</span>{{ end }}
+</a>

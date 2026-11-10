@@ -1,0 +1,26 @@
+{{ $products := hugo.Data.products }}
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <a class="brand" href="{{ "" | relURL }}">{{ partial "logo.html" . }}<span>InfraPI</span></a>
+      <p class="muted">Internal developer platform, as APIs. Open source under the MIT license.</p>
+    </div>
+    <div>
+      <h2>Products</h2>
+      {{ range $products.order }}<a href="{{ printf "%s/" . | relURL }}">{{ (index $products.items .).name }}</a>{{ end }}
+      <a href="{{ "roadmap/" | relURL }}">Roadmap</a>
+    </div>
+    <div>
+      <h2>Developers</h2>
+      {{ range $products.order }}<a href="{{ printf "%s/docs/" . | relURL }}">{{ (index $products.items .).name }} docs</a>{{ end }}
+      <a href="{{ "learn/" | relURL }}">Learn</a>
+    </div>
+    <div>
+      <h2>Company</h2>
+      <a href="{{ "services/" | relURL }}">Services</a>
+      <a href="{{ "services/" | relURL }}#contact">Contact</a>
+      <a href="{{ site.Params.github }}">GitHub</a>
+    </div>
+  </div>
+  <div class="wrap footer-base muted">© {{ now.Year }} InfraPI · MIT License</div>
+</footer>

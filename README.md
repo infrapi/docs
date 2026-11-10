@@ -1,0 +1,72 @@
+# infrapi/docs
+
+The InfraPI developer portal: landing page, product hubs, Learn tutorials,
+services — and every product's documentation in one site, with one search.
+Built with [Hugo](https://gohugo.io): one binary, no theme or npm dependency.
+
+**No product documentation is written here.** Each product keeps its docs in
+its own repository's `docs/`, next to its code and browsable on GitHub. Hugo
+mounts those folders at build time; nothing is copied or committed here.
+
+| Written here | Mounted from the products |
+|---|---|
+| `content/_index.md` — landing page (data in front matter) | `content/<slug>/docs/` ← `infrapi/<slug>/docs/` |
+| `content/<slug>/_index.md` — product hubs | |
+| `content/learn/` — tutorials | |
+| `content/services.md`, `content/roadmap.md` | |
+| `data/products.yaml` — names, versions, status, taglines | |
+| `layouts/`, `assets/` — the theme, hand-written | |
+
+## How it works
+
+```
+infrapi/kayra    ──┐  push to main touching docs/**
+infrapi/tofu-api ──┼──► repository_dispatch (docs-updated) ──► infrapi/docs: Publish
+infrapi/lib      ──┘          (+ nightly, + every push here)    ├─ checkout each repo's docs/ into _repos/
+                                                                 ├─ hugo --panicOnWarning
+                                                                 └─ GitHub Pages
+```
+
+- [`hugo.toml`](hugo.toml) mounts `_repos/<slug>/docs` at `content/<slug>/docs`,
+  and its `index.md` as `_index.md` (Hugo needs that name, GitHub needs `index.md`).
+- [`layouts/_markup/render-link.html`](layouts/_markup/render-link.html) resolves the
+  docs' GitHub-style links — relative `.md` paths and the old
+  `https://infrapi.github.io/<slug>/...` sites — to portal pages, and **fails the
+  build on an unknown page or anchor**.
+- [`layouts/_partials/docs-tree.html`](layouts/_partials/docs-tree.html) builds each
+  product's sidebar from the files: `weight` in front matter orders pages; a
+  subfolder is a group that takes the first free slot (10, 20, …).
+- GitHub alerts (`> [!NOTE]`) render as callouts, `<details>` as is.
+
+### What a product repository's docs need
+
+- `docs/index.md` and one `.md` per page, front matter `title`, `description`, `weight`.
+- GitHub-native Markdown only: alerts (`> [!NOTE]`), `<details>`, relative `.md` links.
+
+## Run locally
+
+Requires Hugo ≥ 0.158 (`go install github.com/gohugoio/hugo@latest` works).
+
+```bash
+make link     # use your checkouts in ../kayra, ../tofu-api, ../lib (LOCAL=.. by default)
+make serve    # http://localhost:1313/docs/ — edits in ../kayra/docs reload live
+make build    # as CI: fails on any broken link or anchor
+make fetch    # instead of link: the repos' main branches from GitHub
+```
+
+## Add a product
+
+1. Two mounts in [`hugo.toml`](hugo.toml) (copy an existing pair).
+2. An entry in [`data/products.yaml`](data/products.yaml).
+3. Its hub: `content/<slug>/_index.md` (copy one, keep the `cascade`).
+4. A checkout step in [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
+5. In the product repo, [`templates/notify-docs.yml`](templates/notify-docs.yml) → `.github/workflows/`.
+
+## Setup, once
+
+- **Pages**: Settings → Pages → Source = GitHub Actions. The workflow takes the
+  base URL from Pages, so a custom domain later needs no change here.
+- **`DOCS_DISPATCH_TOKEN`** org secret, for the products' notify workflow: a
+  GitHub App token, or a fine-grained token with Contents read/write on
+  `infrapi/docs` only, lifetime under 366 days (enforced by the org). Without
+  it, the nightly build still picks changes up.
