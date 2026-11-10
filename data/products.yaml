@@ -33,9 +33,3 @@ items:
     tagline: The Go foundation of every InfraPI service.
     summary: URL layout, auth, contract enforcement, RFC 9457 errors, metrics, tracing and Vault, shared by every service.
 
-# Shown as "coming next" on the landing page and the roadmap.
-# TODO(infrapi): the real future projects.
-next:
-  - name: Next project
-    stage: exploring
-    summary: What it does, for whom, in one sentence.

@@ -4,7 +4,6 @@ layout: product
 description: lib gives your own platform services the same URL layout, authentication, contract enforcement, errors and observability as Kayra and tofu-api — so every API on the platform behaves the same way.
 headline: The Go foundation of every InfraPI service.
 start: getting-started
-help: Building your own platform services on lib? We can review your design and get your team started.
 
 problems:
   - Each internal service picks its own routing, error format, auth, metrics and config conventions.

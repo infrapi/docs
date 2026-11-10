@@ -59,21 +59,4 @@ why:
     title: Plain to operate
     text: Single Go binaries, systemd units, RPM and DEB packages, Prometheus metrics and OpenTelemetry traces. No cluster required.
 
-tiers:
-  - title: Community
-    price: Free, open source
-    items: [All products, MIT license, Docs and tutorials, GitHub discussions]
-    cta: Read the docs
-    url: kayra/docs/
-  - title: Consulting
-    price: Per engagement
-    featured: true
-    items: [Platform assessment, First golden paths implemented, Identity, directory and Vault integration, Training for your platform team]
-    cta: Talk to us
-    url: services/#consulting
-  - title: Support
-    price: Yearly
-    items: [Priority answers and fixes, Upgrade help while pre-1.0, A direct line to the maintainers]
-    cta: Get support
-    url: services/#support
 ---

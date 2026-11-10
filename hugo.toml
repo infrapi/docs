@@ -10,7 +10,6 @@ disableKinds = ["taxonomy", "term", "rss"]
   # to https://infrapi.github.io/lib/packages/server/, are rewritten to the
   # portal's copy by layouts/_markup/render-link.html.
   legacyHost = "infrapi.github.io"
-  contact = "me@ahmet2mir.eu"
 
 [markup]
   [markup.goldmark.renderer]

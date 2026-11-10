@@ -4,7 +4,6 @@ layout: product
 description: tofu-api runs an OpenTofu or Terraform provider over the plugin protocol — without HCL, plan or state file — and generates the OpenAPI contract from its schemas. What is left to write is what is specific to your platform, in one YAML file per provider.
 headline: Any OpenTofu or Terraform provider, as a REST API.
 start: getting-started
-help: Want an API in front of a product that is not tested yet? We can help you write and validate its provider file.
 
 problems:
   - An internal API in front of a product is mostly a client of that product's API — and writing, then maintaining, that client is most of the work.

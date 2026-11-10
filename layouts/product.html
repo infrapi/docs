@@ -102,5 +102,5 @@
   </div>
 </section>
 
-{{ partial "cta.html" (dict "title" (printf "Rolling out %s?" $p.name) "text" .Params.help) }}
+{{ partial "cta.html" (dict "title" (printf "Contribute to %s" $p.name) "text" "Issues, ideas and pull requests are welcome on GitHub." "repo" $p.repo) }}
 {{ end }}

@@ -18,7 +18,7 @@
     <div class="card-grid card-grid--3" data-filter-target>
       {{ range .Pages.ByWeight }}{{ partial "tutorial-card.html" . }}{{ end }}
     </div>
-    <p class="muted filter-empty" data-filter-empty hidden>No tutorial for this product yet. <a href="{{ "services/" | relURL }}#contact">Tell us what you need.</a></p>
+    <p class="muted filter-empty" data-filter-empty hidden>No tutorial for this product yet. <a href="{{ site.Params.github }}">Tell us what you need on GitHub.</a></p>
   </div>
 </section>
 {{ end }}

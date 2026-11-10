@@ -13,7 +13,6 @@ mounts those folders at build time; nothing is copied or committed here.
 | `content/_index.md` — landing page (data in front matter) | `content/<slug>/docs/` ← `infrapi/<slug>/docs/` |
 | `content/<slug>/_index.md` — product hubs | |
 | `content/learn/` — tutorials | |
-| `content/services.md`, `content/roadmap.md` | |
 | `data/products.yaml` — names, versions, status, taglines | |
 | `layouts/`, `assets/` — the theme, hand-written | |
 

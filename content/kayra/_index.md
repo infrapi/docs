@@ -4,7 +4,6 @@ layout: product
 description: Kayra says who a caller is, which namespace — tenant — they act in, and what RBAC lets them do there. It keeps the catalog of the platform's APIs and which tenant is subscribed to which, and leaves each API to the team that owns it.
 headline: Identity, tenancy and access control for your internal platform.
 start: getting-started
-help: We can roll Kayra out across your identity provider, directory and existing APIs.
 
 problems:
   - Every platform API re-implements authentication and "who may do what".

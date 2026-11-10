@@ -8,7 +8,6 @@
     <div>
       <h2>Products</h2>
       {{ range $products.order }}<a href="{{ printf "%s/" . | relURL }}">{{ (index $products.items .).name }}</a>{{ end }}
-      <a href="{{ "roadmap/" | relURL }}">Roadmap</a>
     </div>
     <div>
       <h2>Developers</h2>
@@ -16,10 +15,9 @@
       <a href="{{ "learn/" | relURL }}">Learn</a>
     </div>
     <div>
-      <h2>Company</h2>
-      <a href="{{ "services/" | relURL }}">Services</a>
-      <a href="{{ "services/" | relURL }}#contact">Contact</a>
+      <h2>Community</h2>
       <a href="{{ site.Params.github }}">GitHub</a>
+      {{ range $products.order }}<a href="https://github.com/{{ (index $products.items .).repo }}/issues">{{ (index $products.items .).name }} issues</a>{{ end }}
     </div>
   </div>
   <div class="wrap footer-base muted">© {{ now.Year }} InfraPI · MIT License</div>

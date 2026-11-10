@@ -15,7 +15,7 @@
       <div class="actions">
         <a class="btn btn--primary" href="#products">Explore the products {{ partial "icon.html" "arrow" }}</a>
         <a class="btn" href="{{ "learn/" | relURL }}">Start learning</a>
-        <a class="btn btn--ghost" href="{{ "services/" | relURL }}">Talk to us</a>
+        <a class="btn btn--ghost" href="{{ site.Params.github }}">GitHub</a>
       </div>
     </div>
 
@@ -129,14 +129,6 @@
         </div>
       </article>
       {{ end }}
-      <article class="card card--next">
-        <div class="card-head">
-          <span class="card-icon">{{ partial "icon.html" "telescope" }}</span>
-          <h3><a href="{{ "roadmap/" | relURL }}">Coming next</a></h3>
-        </div>
-        <p>What we are building to complete the platform — and how to tell us what you need.</p>
-        <div class="card-links"><a href="{{ "roadmap/" | relURL }}">Roadmap</a></div>
-      </article>
     </div>
   </div>
 </section>
@@ -190,23 +182,6 @@
   </div>
 </section>
 {{ end }}
-
-<section class="section">
-  <div class="wrap">
-    <p class="eyebrow">Adopt it your way</p>
-    <h2 class="section-title">Open source first. Help when you want it.</h2>
-    <div class="card-grid card-grid--3 tiers">
-      {{ range .Params.tiers }}
-      <div class="card tier{{ if .featured }} tier--featured{{ end }}">
-        <h3>{{ .title }}</h3>
-        <p class="tier-price">{{ .price }}</p>
-        <ul class="checks">{{ range .items }}<li>{{ partial "icon.html" "check" }}{{ . }}</li>{{ end }}</ul>
-        <a class="btn{{ if .featured }} btn--primary{{ end }}" href="{{ .url | relURL }}">{{ .cta }}</a>
-      </div>
-      {{ end }}
-    </div>
-  </div>
-</section>
 
 {{ partial "cta.html" (dict) }}
 {{ end }}
