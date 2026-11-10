@@ -1,15 +1,16 @@
 {{ define "bodyclass" }}hub{{ end }}
 {{ define "main" }}
-{{ $slug := .Section }}
+{{ $slug := .Params.product }}
 {{ $p := index hugo.Data.products.items $slug }}
 {{ $entries := partial "docs-tree.html" $slug }}
-{{ $docs := site.GetPage (printf "/%s/docs" $slug) }}
-{{ $start := $docs }}{{ with .Params.start }}{{ with site.GetPage (printf "/%s/docs/%s" $slug .) }}{{ $start = . }}{{ end }}{{ end }}
+{{ $docs := site.GetPage (printf "/products/%s/docs" $slug) }}
+{{ if not $docs }}{{ errorf "%s: no docs section /products/%s/docs (is _repos/%s linked or fetched? restart hugo server after changing mounts)" .File.Path $slug $slug }}{{ end }}
+{{ $start := $docs }}{{ with .Params.start }}{{ with site.GetPage (printf "/products/%s/docs/%s" $slug .) }}{{ $start = . }}{{ else }}{{ errorf "%s: start page %q not found in /products/%s/docs" $.File.Path . $slug }}{{ end }}{{ end }}
 
 <section class="hub-hero">
   <div class="glow" aria-hidden="true"></div>
   <div class="wrap">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ "" | relURL }}#products">Products</a><span>/</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ "products/" | relURL }}">Products</a><span>/</span></nav>
     <div class="hub-title">
       <span class="hub-icon">{{ partial "icon.html" $p.icon }}</span>
       <h1>{{ $p.name }}</h1>

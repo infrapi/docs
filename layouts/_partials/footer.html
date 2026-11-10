@@ -7,11 +7,11 @@
     </div>
     <div>
       <h2>Products</h2>
-      {{ range $products.order }}<a href="{{ printf "%s/" . | relURL }}">{{ (index $products.items .).name }}</a>{{ end }}
+      {{ range $products.order }}<a href="{{ printf "products/%s/" . | relURL }}">{{ (index $products.items .).name }}</a>{{ end }}
     </div>
     <div>
       <h2>Developers</h2>
-      {{ range $products.order }}<a href="{{ printf "%s/docs/" . | relURL }}">{{ (index $products.items .).name }} docs</a>{{ end }}
+      {{ range $products.order }}<a href="{{ printf "products/%s/docs/" . | relURL }}">{{ (index $products.items .).name }} docs</a>{{ end }}
       <a href="{{ "learn/" | relURL }}">Learn</a>
     </div>
     <div>

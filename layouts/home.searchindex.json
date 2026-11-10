@@ -3,11 +3,12 @@
 {{- range site.Pages -}}
   {{- if and .Title (not .IsHome) (not .Params.searchExclude) -}}
     {{- $where := "" -}}
-    {{- with index $products .Section -}}{{ $where = .name }}{{- end -}}
+    {{- with index $products (.Params.product | default "") -}}{{ $where = .name }}{{- end -}}
     {{- if eq .Section "learn" -}}{{ $where = "Learn" }}{{- end -}}
     {{- $kind := "Page" -}}
     {{- if strings.Contains .RelPermalink "/docs/" -}}{{ $kind = "Docs" }}{{- else if eq .Layout "product" -}}{{ $kind = "Product" }}{{- else if eq .Section "learn" -}}{{ $kind = "Tutorial" }}{{- end -}}
-    {{- $title := cond (and .IsSection (strings.Contains .RelPermalink "/docs/")) (printf "%s documentation" (index $products .Section).name) .Title -}}
+    {{- $title := .Title -}}
+    {{- if and .IsSection (strings.Contains .RelPermalink "/docs/") -}}{{- with index $products (.Params.product | default "") -}}{{ $title = printf "%s documentation" .name }}{{- end -}}{{- end -}}
     {{- $headings := slice -}}
     {{- range .Fragments.Headings -}}{{- range .Headings -}}{{ $headings = $headings | append .Title }}{{- range .Headings -}}{{ $headings = $headings | append .Title }}{{- end -}}{{- end -}}{{- end -}}
     {{- $items = $items | append (dict "t" $title "d" .Description "u" .RelPermalink "w" $where "k" $kind "h" (delimit $headings " · ")) -}}

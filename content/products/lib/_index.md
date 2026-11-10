@@ -1,6 +1,7 @@
 ---
 title: lib
 layout: product
+product: lib
 description: lib gives your own platform services the same URL layout, authentication, contract enforcement, errors and observability as Kayra and tofu-api — so every API on the platform behaves the same way.
 headline: The Go foundation of every InfraPI service.
 start: getting-started
@@ -28,7 +29,7 @@ facts:
 
 cascade:
   - target:
-      path: "{/lib/docs,/lib/docs/**}"
+      path: "{/products/lib/docs,/products/lib/docs/**}"
     layout: docs
     product: lib
 ---

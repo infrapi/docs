@@ -1,6 +1,7 @@
 ---
 title: Kayra
 layout: product
+product: kayra
 description: Kayra says who a caller is, which namespace — tenant — they act in, and what RBAC lets them do there. It keeps the catalog of the platform's APIs and which tenant is subscribed to which, and leaves each API to the team that owns it.
 headline: Identity, tenancy and access control for your internal platform.
 start: getting-started
@@ -30,7 +31,7 @@ facts:
 
 cascade:
   - target:
-      path: "{/kayra/docs,/kayra/docs/**}"
+      path: "{/products/kayra/docs,/products/kayra/docs/**}"
     layout: docs
     product: kayra
 ---

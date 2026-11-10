@@ -10,8 +10,8 @@ mounts those folders at build time; nothing is copied or committed here.
 
 | Written here | Mounted from the products |
 |---|---|
-| `content/_index.md` — landing page (data in front matter) | `content/<slug>/docs/` ← `infrapi/<slug>/docs/` |
-| `content/<slug>/_index.md` — product hubs | |
+| `content/_index.md` — landing page (data in front matter) | `content/products/<slug>/docs/` ← `infrapi/<slug>/docs/` |
+| `content/products/<slug>/_index.md` — product hubs (`/products/<slug>/`) | |
 | `content/learn/` — tutorials | |
 | `data/products.yaml` — names, versions, status, taglines | |
 | `layouts/`, `assets/` — the theme, hand-written | |
@@ -26,11 +26,11 @@ infrapi/lib      ──┘          (+ nightly, + every push here)    ├─ che
                                                                  └─ GitHub Pages
 ```
 
-- [`hugo.toml`](hugo.toml) mounts `_repos/<slug>/docs` at `content/<slug>/docs`,
+- [`hugo.toml`](hugo.toml) mounts `_repos/<slug>/docs` at `content/products/<slug>/docs`,
   and its `index.md` as `_index.md` (Hugo needs that name, GitHub needs `index.md`).
 - [`layouts/_markup/render-link.html`](layouts/_markup/render-link.html) resolves the
   docs' GitHub-style links — relative `.md` paths and the old
-  `https://infrapi.github.io/<slug>/...` sites — to portal pages, and **fails the
+  `https://infrapi.github.io/<slug>/...` sites — to portal pages under `/products/<slug>/docs/`, and **fails the
   build on an unknown page or anchor**.
 - [`layouts/_partials/docs-tree.html`](layouts/_partials/docs-tree.html) builds each
   product's sidebar from the files: `weight` in front matter orders pages; a
@@ -57,7 +57,7 @@ make fetch    # instead of link: the repos' main branches from GitHub
 
 1. Two mounts in [`hugo.toml`](hugo.toml) (copy an existing pair).
 2. An entry in [`data/products.yaml`](data/products.yaml).
-3. Its hub: `content/<slug>/_index.md` (copy one, keep the `cascade`).
+3. Its hub: `content/products/<slug>/_index.md` (copy one; set `product: <slug>` and keep the `cascade`).
 4. A checkout step in [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
 5. In the product repo, [`templates/notify-docs.yml`](templates/notify-docs.yml) → `.github/workflows/`.
 

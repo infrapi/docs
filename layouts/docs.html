@@ -1,6 +1,6 @@
 {{ define "bodyclass" }}docs{{ end }}
 {{ define "main" }}
-{{ $slug := .Section }}
+{{ $slug := .Params.product }}
 {{ $p := index hugo.Data.products.items $slug }}
 {{ $entries := partial "docs-tree.html" $slug }}
 {{ $flat := slice }}
@@ -14,7 +14,7 @@
         <span><strong>{{ $p.name }}</strong> {{ partial "status.html" $p }}</span>
         <span class="docs-nav-toggle">{{ partial "icon.html" "menu" }}</span>
       </summary>
-      <a class="docs-nav-hub" href="{{ printf "%s/" $slug | relURL }}">{{ partial "icon.html" "arrow" }} Product overview</a>
+      <a class="docs-nav-hub" href="{{ printf "products/%s/" $slug | relURL }}">{{ partial "icon.html" "arrow" }} Product overview</a>
       <nav>
         <ul>
           {{ range $entries }}
@@ -39,14 +39,14 @@
 
   <article class="docs-article">
     <nav class="crumbs" aria-label="Breadcrumb">
-      <a href="{{ printf "%s/" $slug | relURL }}">{{ $p.name }}</a><span>/</span>
-      <a href="{{ printf "%s/docs/" $slug | relURL }}">Docs</a>
+      <a href="{{ printf "products/%s/" $slug | relURL }}">{{ $p.name }}</a><span>/</span>
+      <a href="{{ printf "products/%s/docs/" $slug | relURL }}">Docs</a>
     </nav>
     <div class="prose">
       {{ .Content }}
     </div>
 
-    {{ $rel := strings.TrimPrefix (printf "%s/docs/" $slug) .File.Path }}
+    {{ $rel := strings.TrimPrefix (printf "products/%s/docs/" $slug) .File.Path }}
     {{ if eq $rel "_index.md" }}{{ $rel = "index.md" }}{{ end }}
     <footer class="docs-footer">
       <a class="muted" href="https://github.com/{{ $p.repo }}/blob/{{ $p.branch }}/docs/{{ $rel }}">{{ partial "icon.html" "github" }} Edit this page on GitHub</a>

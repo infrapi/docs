@@ -8,10 +8,10 @@
   Returns a slice of (dict "weight" "page") or (dict "weight" "group" "pages").
 */ -}}
 {{- $slug := . -}}
-{{- $root := site.GetPage (printf "/%s/docs" $slug) -}}
+{{- $root := site.GetPage (printf "/products/%s/docs" $slug) -}}
 {{- $entries := slice -}}
 {{- with $root -}}
-  {{- $prefix := printf "%s/docs/" $slug -}}
+  {{- $prefix := printf "products/%s/docs/" $slug -}}
   {{- $rootWeight := .Weight | default 10 -}}
   {{- $weights := slice $rootWeight -}}
   {{- $entries = $entries | append (dict "weight" $rootWeight "page" .) -}}

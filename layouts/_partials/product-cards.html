@@ -1,0 +1,17 @@
+{{ $products := hugo.Data.products }}
+      {{ range $products.order }}{{ $p := index $products.items . }}
+      <article class="card card--product">
+        <div class="card-head">
+          <span class="card-icon">{{ partial "icon.html" $p.icon }}</span>
+          <h3><a href="{{ printf "products/%s/" . | relURL }}">{{ $p.name }}</a></h3>
+          {{ partial "status.html" $p }}
+        </div>
+        <p class="card-tagline">{{ $p.tagline }}</p>
+        <p>{{ $p.summary }}</p>
+        <div class="card-links">
+          <a href="{{ printf "products/%s/" . | relURL }}">Overview</a>
+          <a href="{{ printf "products/%s/docs/" . | relURL }}">Docs</a>
+          <a href="https://github.com/{{ $p.repo }}">GitHub</a>
+        </div>
+      </article>
+      {{ end }}

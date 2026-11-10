@@ -1,6 +1,7 @@
 ---
 title: tofu-api
 layout: product
+product: tofu-api
 description: tofu-api runs an OpenTofu or Terraform provider over the plugin protocol — without HCL, plan or state file — and generates the OpenAPI contract from its schemas. What is left to write is what is specific to your platform, in one YAML file per provider.
 headline: Any OpenTofu or Terraform provider, as a REST API.
 start: getting-started
@@ -32,7 +33,7 @@ facts:
 
 cascade:
   - target:
-      path: "{/tofu-api/docs,/tofu-api/docs/**}"
+      path: "{/products/tofu-api/docs,/products/tofu-api/docs/**}"
     layout: docs
     product: tofu-api
 ---

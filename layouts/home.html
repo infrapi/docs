@@ -88,10 +88,10 @@
       <div class="arch-row">
         <div class="arch-label">APIs</div>
         <div class="arch-boxes arch-boxes--apis">
-          <a class="arch-box arch-box--product" href="{{ "tofu-api/" | relURL }}"><strong>tofu-api</strong><small>any OpenTofu provider as REST</small></a>
+          <a class="arch-box arch-box--product" href="{{ "products/tofu-api/" | relURL }}"><strong>tofu-api</strong><small>any OpenTofu provider as REST</small></a>
           <div class="arch-box"><strong>Your services</strong><small>built on lib</small></div>
           <span class="arch-side" aria-hidden="true">may this caller do this?</span>
-          <a class="arch-box arch-box--product arch-box--kayra" href="{{ "kayra/" | relURL }}"><strong>Kayra</strong><small>identity · namespaces · RBAC · API catalog</small></a>
+          <a class="arch-box arch-box--product arch-box--kayra" href="{{ "products/kayra/" | relURL }}"><strong>Kayra</strong><small>identity · namespaces · RBAC · API catalog</small></a>
         </div>
       </div>
       <div class="arch-link"><span>provider plugin protocol · credentials per namespace from Vault</span></div>
@@ -103,7 +103,7 @@
           <div class="arch-box arch-box--muted">…any provider</div>
         </div>
       </div>
-      <a class="arch-foundation" href="{{ "lib/" | relURL }}"><strong>lib</strong> — the shared Go foundation under every service: URL layout, auth, contracts, errors, metrics, tracing, Vault</a>
+      <a class="arch-foundation" href="{{ "products/lib/" | relURL }}"><strong>lib</strong> — the shared Go foundation under every service: URL layout, auth, contracts, errors, metrics, tracing, Vault</a>
     </div>
   </div>
 </section>
@@ -113,22 +113,7 @@
     <p class="eyebrow">Products</p>
     <h2 class="section-title">Each one stands alone. Together, they are a platform.</h2>
     <div class="card-grid card-grid--products">
-      {{ range $products.order }}{{ $p := index $products.items . }}
-      <article class="card card--product">
-        <div class="card-head">
-          <span class="card-icon">{{ partial "icon.html" $p.icon }}</span>
-          <h3><a href="{{ printf "%s/" . | relURL }}">{{ $p.name }}</a></h3>
-          {{ partial "status.html" $p }}
-        </div>
-        <p class="card-tagline">{{ $p.tagline }}</p>
-        <p>{{ $p.summary }}</p>
-        <div class="card-links">
-          <a href="{{ printf "%s/" . | relURL }}">Overview</a>
-          <a href="{{ printf "%s/docs/" . | relURL }}">Docs</a>
-          <a href="https://github.com/{{ $p.repo }}">GitHub</a>
-        </div>
-      </article>
-      {{ end }}
+      {{ partial "product-cards.html" . }}
     </div>
   </div>
 </section>

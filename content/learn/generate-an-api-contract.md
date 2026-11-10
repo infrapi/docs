@@ -19,7 +19,7 @@ repository's script uses it to download and verify the provider).
 > [!NOTE]
 > tofu-api is early stage, and the AWS provider is not yet among the
 > providers it has been tested live with. Generating the contract, as here,
-> calls nothing in AWS; see [Testing](../tofu-api/docs/testing.md) for what
+> calls nothing in AWS; see [Testing](../products/tofu-api/docs/testing.md) for what
 > has been tested.
 
 ## Get tofu-api
@@ -86,7 +86,7 @@ request schema is built from the provider's schema:
   the request: sending one is a 400, and they come back in the response;
 - sensitive ones are `format: password`.
 
-The full mapping is in [Mapping](../tofu-api/docs/mapping.md).
+The full mapping is in [Mapping](../products/tofu-api/docs/mapping.md).
 
 ## Shape it with rules
 
@@ -117,7 +117,7 @@ called. A misspelt key, such as `Enum`, stops `gen` with an error.
 
 ## Next steps
 
-- Serve it for real — it creates real, billed instances: [Getting started](../tofu-api/docs/getting-started.md) and [Configuration](../tofu-api/docs/configuration.md).
-- Give each tenant its own AWS credentials from Vault: [Namespaces](../tofu-api/docs/namespaces.md).
-- Require a token and RBAC through Kayra: [Authentication](../tofu-api/docs/authentication.md).
-- Defaults, values set by the service, error mapping and CEL expressions: [Rules](../tofu-api/docs/rules.md).
+- Serve it for real — it creates real, billed instances: [Getting started](../products/tofu-api/docs/getting-started.md) and [Configuration](../products/tofu-api/docs/configuration.md).
+- Give each tenant its own AWS credentials from Vault: [Namespaces](../products/tofu-api/docs/namespaces.md).
+- Require a token and RBAC through Kayra: [Authentication](../products/tofu-api/docs/authentication.md).
+- Defaults, values set by the service, error mapping and CEL expressions: [Rules](../products/tofu-api/docs/rules.md).

@@ -12,7 +12,7 @@
         <summary>Products</summary>
         <div class="menu-panel">
           {{ range $products.order }}{{ $p := index $products.items . }}
-          <a class="menu-item" href="{{ printf "%s/" . | relURL }}">
+          <a class="menu-item" href="{{ printf "products/%s/" . | relURL }}">
             <span class="menu-icon">{{ partial "icon.html" $p.icon }}</span>
             <span><strong>{{ $p.name }}</strong> {{ partial "status.html" $p }}<small>{{ $p.tagline }}</small></span>
           </a>
@@ -23,7 +23,7 @@
         <summary>Docs</summary>
         <div class="menu-panel menu-panel--narrow">
           {{ range $products.order }}{{ $p := index $products.items . }}
-          <a class="menu-item" href="{{ printf "%s/docs/" . | relURL }}"><span><strong>{{ $p.name }}</strong><small>Reference and guides</small></span></a>
+          <a class="menu-item" href="{{ printf "products/%s/docs/" . | relURL }}"><span><strong>{{ $p.name }}</strong><small>Reference and guides</small></span></a>
           {{ end }}
         </div>
       </details>

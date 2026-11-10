@@ -14,12 +14,12 @@
 {{- $products := hugo.Data.products.items -}}
 
 {{- if and (eq $u.Host site.Params.legacyHost) (in (slice "http" "https") $u.Scheme) -}}
-  {{- /* https://infrapi.github.io/<slug>/<page>/ → /<slug>/docs/<page>/ */ -}}
+  {{- /* https://infrapi.github.io/<slug>/<page>/ → /products/<slug>/docs/<page>/ */ -}}
   {{- $parts := split (strings.Trim $u.Path "/") "/" -}}
   {{- $slug := index $parts 0 -}}
   {{- if index $products $slug -}}
     {{- $tail := strings.Trim (delimit (after 1 $parts) "/") "/" -}}
-    {{- $path := cond (eq $tail "") (printf "/%s/docs" $slug) (printf "/%s/docs/%s" $slug $tail) -}}
+    {{- $path := cond (eq $tail "") (printf "/products/%s/docs" $slug) (printf "/products/%s/docs/%s" $slug $tail) -}}
     {{- with site.GetPage $path -}}{{ $target = . }}{{- else -}}
       {{- warnf "%s: link to %s: no page %s in the portal" $.Page.File.Path $dest $path -}}
     {{- end -}}

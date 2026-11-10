@@ -8,7 +8,7 @@
     <h1>{{ .Title }}</h1>
     <p class="lead">{{ .Description }}</p>
     <div class="chips">
-      {{ range .Params.products }}<a class="chip" href="{{ printf "%s/" . | relURL }}">{{ (index $products .).name }}</a>{{ end }}
+      {{ range .Params.products }}<a class="chip" href="{{ printf "products/%s/" . | relURL }}">{{ (index $products .).name }}</a>{{ end }}
       {{ with .Params.level }}<span class="chip chip--muted">{{ . }}</span>{{ end }}
       {{ with .Params.duration }}<span class="chip chip--muted">{{ partial "icon.html" "clock" }} {{ . }}</span>{{ end }}
     </div>

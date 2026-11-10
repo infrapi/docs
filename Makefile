@@ -29,7 +29,8 @@ link: ## Use your checkouts in $(LOCAL)/<repo> (edits there reload live)
 	@mkdir -p _repos
 	@for r in $(REPOS); do \
 	  [ -d "$(LOCAL)/$$r/docs" ] || { echo "missing $(LOCAL)/$$r/docs (clone infrapi/$$r there, or use: make fetch)"; exit 1; }; \
-	  rm -rf "_repos/$$r"; ln -s "$$(realpath $(LOCAL)/$$r)" "_repos/$$r"; \
+	  case "$(LOCAL)" in /*) t="$(LOCAL)/$$r" ;; *) t="../$(LOCAL)/$$r" ;; esac; \
+	  rm -rf "_repos/$$r"; ln -s "$$t" "_repos/$$r"; \
 	  echo "  _repos/$$r -> $$(realpath $(LOCAL)/$$r) ($$(git -C $(LOCAL)/$$r branch --show-current 2>/dev/null))"; \
 	done
 	@$(MAKE) --no-print-directory check-repos
@@ -37,7 +38,8 @@ link: ## Use your checkouts in $(LOCAL)/<repo> (edits there reload live)
 check-repos: ## Check every linked repo has portal-ready docs (front matter)
 	@bad=0; for r in $(REPOS); do \
 	  f="_repos/$$r/docs/index.md"; \
-	  if [ ! -f "$$f" ]; then echo "  ✗ $$r: no docs/index.md"; bad=1; \
+	  if [ -L "_repos/$$r" ] && [ ! -e "_repos/$$r" ]; then echo "  ✗ $$r: _repos/$$r -> $$(readlink _repos/$$r) does not exist: run make link (or make fetch)"; bad=1; \
+	  elif [ ! -f "$$f" ]; then echo "  ✗ $$r: no docs/index.md"; bad=1; \
 	  elif [ "$$(head -1 $$f)" != "---" ]; then \
 	    echo "  ✗ $$r: docs/index.md has no front matter (branch $$(git -C _repos/$$r branch --show-current 2>/dev/null)): not migrated, switch to docs/portal-ready"; bad=1; \
 	  fi; \
@@ -51,12 +53,12 @@ fetch: ## Use the repos' main branches from GitHub instead, as CI does
 	  git -c core.hooksPath=/dev/null -C "_repos/$$r" sparse-checkout set docs && echo "  _repos/$$r <- infrapi/$$r@main"; \
 	done
 
-serve: hugo-ok ## Serve on http://localhost:$(PORT)/docs/ with live reload
+serve: hugo-ok check-repos ## Serve on http://localhost:$(PORT)/docs/ with live reload
 	@[ -d _repos ] || { echo "no _repos/: run make link (local checkouts) or make fetch (GitHub) first"; exit 1; }
 	@echo "  → http://localhost:$(PORT)/docs/"
 	$(HUGO) server --port $(PORT) --disableFastRender --navigateToChanged
 
-check: hugo-ok ## Build as CI does: fails on any broken link or anchor
+check: hugo-ok check-repos ## Build as CI does: fails on any broken link or anchor
 	$(HUGO) --gc --minify --panicOnWarning --destination public
 	@echo "  ok: $$(find public -name index.html | wc -l) pages in public/"
 
