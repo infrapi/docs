@@ -28,17 +28,35 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Each product's docs/ only, at the tip of main. Public repositories:
-      # no token needed. For a private one, add `token: ${{ secrets.... }}`.
+      # Each product's docs/ only, at the tip of main by default. To publish
+      # another branch of a product (e.g. before its docs are merged), set the
+      # repository variable DOCS_REF_KAYRA, DOCS_REF_TOFU_API or DOCS_REF_LIB
+      # (Settings > Secrets and variables > Actions > Variables).
+      # Public repositories: no token needed. For a private one, add `token:`.
       - name: Check out kayra docs
         uses: actions/checkout@v7
-        with: { repository: infrapi/kayra, path: _repos/kayra, sparse-checkout: docs }
+        with: { repository: infrapi/kayra, ref: "${{ vars.DOCS_REF_KAYRA || 'main' }}", path: _repos/kayra, sparse-checkout: docs }
       - name: Check out tofu-api docs
         uses: actions/checkout@v7
-        with: { repository: infrapi/tofu-api, path: _repos/tofu-api, sparse-checkout: docs }
+        with: { repository: infrapi/tofu-api, ref: "${{ vars.DOCS_REF_TOFU_API || 'main' }}", path: _repos/tofu-api, sparse-checkout: docs }
       - name: Check out lib docs
         uses: actions/checkout@v7
-        with: { repository: infrapi/lib, path: _repos/lib, sparse-checkout: docs }
+        with: { repository: infrapi/lib, ref: "${{ vars.DOCS_REF_LIB || 'main' }}", path: _repos/lib, sparse-checkout: docs }
+
+      # Same check as `make check-repos`: a clear error instead of Hugo's
+      # "invalid YAML delimiter" when a product's docs are not migrated.
+      - name: Check product docs are portal-ready
+        run: |
+          bad=0
+          for r in kayra tofu-api lib; do
+            f="_repos/$r/docs/index.md"
+            if [ ! -f "$f" ]; then
+              echo "::error file=$f::infrapi/$r ($(git -C _repos/$r rev-parse --abbrev-ref HEAD)) has no docs/index.md"; bad=1
+            elif [ "$(head -1 "$f")" != "---" ]; then
+              echo "::error file=$f::infrapi/$r ($(git -C _repos/$r rev-parse --abbrev-ref HEAD)): docs/index.md has no front matter, docs not migrated. Merge its docs/portal-ready changes, or set the DOCS_REF_* variable to a migrated branch."; bad=1
+            fi
+          done
+          exit $bad
 
       - name: Install Hugo
         run: |

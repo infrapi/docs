@@ -1,4 +1,4 @@
-baseURL = "https://infrapi.github.io/docs/"
+baseURL = "https://infrapi.github.io/"
 title = "InfraPI"
 locale = "en"
 disableKinds = ["taxonomy", "term", "rss"]
@@ -10,7 +10,7 @@ disableKinds = ["taxonomy", "term", "rss"]
   # to https://infrapi.github.io/lib/packages/server/, are rewritten to the
   # portal's copy by layouts/_markup/render-link.html.
   legacyHost = "infrapi.github.io"
-  contact = "contact@example.com"  # TODO(infrapi): real contact address
+  contact = "me@ahmet2mir.eu"
 
 [markup]
   [markup.goldmark.renderer]
