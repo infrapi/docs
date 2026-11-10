@@ -66,7 +66,8 @@ make fetch    # instead of link: the repos' main branches from GitHub
 
 - **Pages**: Settings → Pages → Source = GitHub Actions. The workflow takes the
   base URL from Pages, so a custom domain later needs no change here.
-- **`DOCS_DISPATCH_TOKEN`** org secret, for the products' notify workflow: a
-  GitHub App token, or a fine-grained token with Contents read/write on
-  `infrapi/docs` only, lifetime under 366 days (enforced by the org). Without
+- **GitHub App**, for the products' notify workflow: Repository permissions
+  Contents read/write, no webhook, installed on `infrapi/docs` only. At org
+  level, shared with the product repositories: variable `DOCS_APP_ID` (the
+  App ID) and secret `DOCS_APP_PRIVATE_KEY` (the `.pem` contents). Without
   it, the nightly build still picks changes up.
