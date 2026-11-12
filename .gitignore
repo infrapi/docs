@@ -4,6 +4,8 @@
 /public/
 /resources/
 /.hugo_build.lock
+# latest release of each product: scripts/releases.sh (make releases)
+/data/releases.yaml
 /.venv/
 # left over from the former MkDocs scaffold
 /docs/

@@ -1,0 +1,3 @@
+{{- /* A product's version: its latest GitHub release (data/releases.yaml, made by scripts/releases.sh), else `version` in data/products.yaml. */ -}}
+{{- $v := index (hugo.Data.releases | default dict) .repo | default .version -}}
+{{- return $v -}}

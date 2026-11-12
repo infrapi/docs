@@ -13,18 +13,24 @@ mounts those folders at build time; nothing is copied or committed here.
 | `content/_index.md` — landing page (data in front matter) | `content/products/<slug>/docs/` ← `infrapi/<slug>/docs/` |
 | `content/products/<slug>/_index.md` — product hubs (`/products/<slug>/`) | |
 | `content/learn/` — tutorials | |
-| `data/products.yaml` — names, versions, status, taglines | |
+| `data/products.yaml` — names, status, taglines (`version` is only a fallback) | `data/releases.yaml` ← each product's latest GitHub release (`scripts/releases.sh`) |
 | `layouts/`, `assets/` — the theme, hand-written | |
 
 ## How it works
 
 ```
-infrapi/kayra    ──┐  push to main touching docs/**
-infrapi/tofu-api ──┼──► repository_dispatch (docs-updated) ──► infrapi/docs: Publish
-infrapi/lib      ──┘          (+ nightly, + every push here)    ├─ checkout each repo's docs/ into _repos/
-                                                                 ├─ hugo --panicOnWarning
-                                                                 └─ GitHub Pages
+infrapi/kayra    ──┐  push to main touching docs/**, or a release (CI `notify` job)
+infrapi/tofu-api ──┼──► repository_dispatch (docs-updated) ──┬─► infrapi/docs: Publish
+infrapi/lib      ──┘          (+ nightly, + every push here)  │    ├─ checkout each repo's docs/ into _repos/
+                                                              │    ├─ scripts/releases.sh → data/releases.yaml
+                                                              │    ├─ hugo --panicOnWarning
+                                                              │    └─ GitHub Pages
+                                                              └─► infrapi/.github: Versions
+                                                                   └─ versions in profile/README.md, committed
 ```
+
+- The version shown for a product is its latest GitHub release, read at build
+  time (`make releases` locally; offline, `version` in `data/products.yaml`).
 
 - [`hugo.toml`](hugo.toml) mounts `_repos/<slug>/docs` at `content/products/<slug>/docs`,
   and its `index.md` as `_index.md` (Hugo needs that name, GitHub needs `index.md`).
@@ -59,14 +65,15 @@ make fetch    # instead of link: the repos' main branches from GitHub
 2. An entry in [`data/products.yaml`](data/products.yaml).
 3. Its hub: `content/products/<slug>/_index.md` (copy one; set `product: <slug>` and keep the `cascade`).
 4. A checkout step in [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
-5. In the product repo, [`templates/notify-docs.yml`](templates/notify-docs.yml) → `.github/workflows/`.
+5. In the product repo, [`templates/notify-docs.yml`](templates/notify-docs.yml) → `.github/workflows/`,
+   and in its `ci.yml` a `notify` job after the release job (see infrapi/lib's).
 
 ## Setup, once
 
 - **Pages**: Settings → Pages → Source = GitHub Actions. The workflow takes the
   base URL from Pages, so a custom domain later needs no change here.
 - **GitHub App**, for the products' notify workflow: Repository permissions
-  Contents read/write, no webhook, installed on `infrapi/docs` only. At org
+  Contents read/write, no webhook, installed on `infrapi/docs` and `infrapi/.github`. At org
   level, shared with the product repositories: variable `DOCS_APP_ID` (the
   App ID) and secret `DOCS_APP_PRIVATE_KEY` (the `.pem` contents). Without
   it, the nightly build still picks changes up.

@@ -95,7 +95,7 @@
       <h2>At a glance</h2>
     </div>
     <dl class="facts">
-      <div><dt>Version</dt><dd>{{ $p.version }}{{ if eq $p.status "early" }} — early stage{{ else }} — pre-1.0, APIs may change{{ end }}</dd></div>
+      <div><dt>Version</dt><dd>{{ partial "version.html" $p }}{{ if eq $p.status "early" }} — early stage{{ else }} — pre-1.0, APIs may change{{ end }}</dd></div>
       {{ range .Params.facts }}<div><dt>{{ .k }}</dt><dd>{{ .v | markdownify }}</dd></div>{{ end }}
       <div><dt>License</dt><dd>MIT</dd></div>
       <div><dt>Source</dt><dd><a href="https://github.com/{{ $p.repo }}">github.com/{{ $p.repo }}</a></dd></div>

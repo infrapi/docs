@@ -17,7 +17,7 @@ LOCAL ?= ..
 REPOS := kayra tofu-api lib
 PORT  ?= 1313
 
-.PHONY: help dev link check-repos fetch serve check build open clean install-hugo hugo-ok
+.PHONY: help dev link check-repos fetch releases serve check build open clean install-hugo hugo-ok
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
@@ -53,12 +53,15 @@ fetch: ## Use the repos' main branches from GitHub instead, as CI does
 	  git -c core.hooksPath=/dev/null -C "_repos/$$r" sparse-checkout set docs && echo "  _repos/$$r <- infrapi/$$r@main"; \
 	done
 
-serve: hugo-ok check-repos ## Serve on http://localhost:$(PORT)/docs/ with live reload
+releases: ## Read each product's latest GitHub release (data/releases.yaml)
+	@scripts/releases.sh --soft
+
+serve: hugo-ok check-repos releases ## Serve on http://localhost:$(PORT)/docs/ with live reload
 	@[ -d _repos ] || { echo "no _repos/: run make link (local checkouts) or make fetch (GitHub) first"; exit 1; }
 	@echo "  → http://localhost:$(PORT)/docs/"
 	$(HUGO) server --port $(PORT) --disableFastRender --navigateToChanged
 
-check: hugo-ok check-repos ## Build as CI does: fails on any broken link or anchor
+check: hugo-ok check-repos releases ## Build as CI does: fails on any broken link or anchor
 	$(HUGO) --gc --minify --panicOnWarning --destination public
 	@echo "  ok: $$(find public -name index.html | wc -l) pages in public/"
 
