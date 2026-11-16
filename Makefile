@@ -36,6 +36,7 @@ link: ## Use your checkouts in $(LOCAL)/<repo> (edits there reload live)
 	@$(MAKE) --no-print-directory check-repos
 
 check-repos: ## Check every linked repo has portal-ready docs (front matter)
+	@[ -d _repos ] || { echo "  ✗ no _repos/: run make dev (links your checkouts in $(LOCAL)/, then serves), or make fetch (GitHub's main branches)"; exit 1; }
 	@bad=0; for r in $(REPOS); do \
 	  f="_repos/$$r/docs/index.md"; \
 	  if [ -L "_repos/$$r" ] && [ ! -e "_repos/$$r" ]; then echo "  ✗ $$r: _repos/$$r -> $$(readlink _repos/$$r) does not exist: run make link (or make fetch)"; bad=1; \

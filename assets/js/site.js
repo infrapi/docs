@@ -19,6 +19,45 @@
     if (!window.matchMedia("(max-width: 820px)").matches) e.preventDefault();
   });
 
+  // ---------- shell blocks: commands and flags ----------
+  // Chroma's bash lexer leaves a command and its flags as plain text: mark
+  // the command, first word of a line, or after a pipe, &&, ;, $( or do,
+  // and every -flag. The text stays the same, copy included.
+  const SHELL = 'code[data-lang="bash"], code[data-lang="sh"], code[data-lang="shell"], code[data-lang="console"]';
+  const opensCommand = /(\|\|?|&&|;|\$\(|\(|`|^do$|^then$|^else$)\s*$/;
+  const shellSpan = (cls, text) => { const s = document.createElement("span"); s.className = cls; s.textContent = text; return s; };
+  document.querySelectorAll(SHELL).forEach((code) => {
+    let continued = false;
+    code.querySelectorAll(".cl").forEach((line) => {
+      let cmdNext = !continued, assigned = false;
+      continued = /\\\s*$/.test(line.textContent);
+      for (const node of [...line.childNodes]) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.matches(".c, .c1")) break;
+          const t = node.textContent.trim();
+          if (!t) continue;
+          if (opensCommand.test(t)) { cmdNext = true; assigned = false; }
+          else if (node.matches(".nv") && cmdNext) assigned = true;  // VAR=value cmd: VAR
+          else if (!(node.matches(".o") && t === "=" && assigned)) cmdNext = false; // for, $VAR, a string...
+          continue;
+        }
+        if (node.nodeType !== Node.TEXT_NODE) continue;
+        const frag = document.createDocumentFragment();
+        let changed = false;
+        for (const part of node.textContent.split(/(\s+|\||&&|;)/)) {
+          if (!part) continue;
+          if (/^\s+$/.test(part)) { frag.append(part); continue; }
+          if (/^(\||&&|;)$/.test(part)) { frag.append(part); cmdNext = true; continue; }
+          if (cmdNext && assigned) { frag.append(part); assigned = false; continue; } // VAR=value cmd
+          if (cmdNext) { frag.append(shellSpan("sh-cmd", part)); cmdNext = false; changed = true; continue; }
+          if (/^--?[A-Za-z]/.test(part)) { frag.append(shellSpan("sh-flag", part)); changed = true; continue; }
+          frag.append(part);
+        }
+        if (changed) node.replaceWith(frag);
+      }
+    });
+  });
+
   // ---------- copy buttons on code blocks ----------
   const copyIcon = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
   const doneIcon = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';

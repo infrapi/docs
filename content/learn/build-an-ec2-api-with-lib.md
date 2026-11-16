@@ -18,7 +18,7 @@ In this tutorial you build `compute`, a service that lets each tenant
 the platform chooses. You run it against [moto](https://github.com/getmoto/moto),
 a local emulator of the AWS APIs, and only then, if you want, against AWS.
 
-**You will need:** Go 1.26.7 or later, `curl`, and either Python 3 (`pip`)
+**You will need:** Go 1.27.3 or later, `curl`, and either Python 3 (`pip`)
 or Docker for moto.
 
 ## Create the module

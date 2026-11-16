@@ -20,6 +20,8 @@
   --warning: #f59e0b;
   --danger: #ef4444;
   --violet: #a78bfa;
+  --code-bg: #12151c;
+  --code-edge: #262a33;
 
   --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -353,7 +355,11 @@ a.chip:hover { color: var(--text); }
 .prose hr { border: 0; border-top: 1px solid var(--edge-soft); margin: 40px 0; }
 .prose :not(pre) > code { font: .875em var(--mono); color: #e4e4e7; background: var(--card); border: 1px solid var(--edge-soft); border-radius: 6px; padding: .12em .4em; overflow-wrap: anywhere; }
 .prose a code { color: inherit; }
-.prose pre, .step pre { position: relative; font: 13.5px/1.65 var(--mono); background: #0b0b0d !important; border: 1px solid var(--edge-soft); border-radius: 12px; padding: 16px 18px; overflow-x: auto; scrollbar-width: thin; }
+.prose pre, .step pre { position: relative; font: 13.5px/1.65 var(--mono); color: #e6edf3; background: var(--code-bg) !important; border: 1px solid var(--code-edge); border-radius: 12px; padding: 16px 18px; overflow-x: auto; scrollbar-width: thin; }
+/* shell blocks: Chroma leaves commands and flags plain, site.js marks them */
+.chroma .sh-cmd { color: #7ee787; font-weight: 500; }
+.chroma .sh-flag { color: #d2a8ff; }
+.chroma .c, .chroma .c1 { color: #9198a1; }
 .prose pre code { font: inherit; }
 .prose table { display: block; width: max-content; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 14.5px; }
 .prose th, .prose td { border-bottom: 1px solid var(--edge-soft); padding: 10px 14px; text-align: left; vertical-align: top; }
