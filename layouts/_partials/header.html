@@ -22,7 +22,7 @@
       <details class="menu">
         <summary>Docs</summary>
         <div class="menu-panel menu-panel--narrow">
-          {{ range $products.order }}{{ $p := index $products.items . }}
+          {{ range $products.docs | default $products.order }}{{ $p := index $products.items . }}
           <a class="menu-item" href="{{ printf "products/%s/docs/" . | relURL }}"><span><strong>{{ $p.name }}</strong><small>Reference and guides</small></span></a>
           {{ end }}
         </div>

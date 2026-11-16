@@ -25,7 +25,7 @@ or Docker for moto.
 
 ```bash
 mkdir compute && cd compute
-go mod init example.com/compute
+go mod init infrapi.io/compute
 go get github.com/infrapi/lib@v0.12.1 \
   github.com/aws/aws-sdk-go-v2/config \
   github.com/aws/aws-sdk-go-v2/service/ec2 \
@@ -86,8 +86,8 @@ import (
 	"github.com/infrapi/lib/pkg/server"
 )
 
-// compute is served under /apis/compute.example.com/v1/namespaces/:namespace.
-var compute = api.Group{Name: "compute", Domain: "example.com", Version: "v1"}
+// compute is served under /apis/compute.infrapi.io/v1/namespaces/:namespace.
+var compute = api.Group{Name: "compute.infrapi.io", Version: "v1"}
 
 // sizes are the only instance types a caller can get: the platform's
 // choice, not the caller's.
@@ -126,7 +126,7 @@ type instance struct {
 
 - `compute` is the API group. lib's [api](../products/lib/docs/packages/api.md)
   package turns it into the layout every InfraPI service shares:
-  `/apis/compute.example.com/v1/namespaces/<namespace>/instance`.
+  `/apis/compute.infrapi.io/v1/namespaces/<namespace>/instance`.
 - `sizes` is the platform's choice of instance types. Callers ask for
   `small`, never for `t3.micro`, so you can change the mapping later
   without breaking them.
@@ -155,7 +155,7 @@ func main() {
 	}
 	s := &service{ec2: ec2.NewFromConfig(awsCfg), ssm: ssm.NewFromConfig(awsCfg)}
 
-	engine, err := server.NewServerGin(cfg, server.WithReadiness(s.ready))
+	engine, err := server.NewServerGin(cfg, []string{compute.Root()}, server.WithReadiness(s.ready))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -187,7 +187,7 @@ func main() {
 	}
 }
 
-// ready is /-/readyz: the service is ready when EC2 answers.
+// ready is <root>/-/readyz: the service is ready when EC2 answers.
 func (s *service) ready(ctx context.Context) error {
 	_, err := s.ec2.DescribeAvailabilityZones(ctx, &ec2.DescribeAvailabilityZonesInput{})
 	return err
@@ -197,10 +197,11 @@ func (s *service) ready(ctx context.Context) error {
 - `config.NewConfig` and `GetAppConfig` load `.env`.
 - `awsconfig.LoadDefaultConfig` finds AWS credentials and the region the
   usual way: environment variables, `~/.aws`, or an instance role.
-- `server.NewServerGin` returns a gin engine that already serves
-  `/-/healthz`, `/-/readyz`, `/-/metrics`, `/-/openapi.json` and `/-/docs`.
-  `WithReadiness` makes `/-/readyz` fail while EC2 does not answer, so a load
-  balancer stops sending traffic.
+- `server.NewServerGin` returns a gin engine that already serves, under the
+  group's root `compute.Root()`, `/apis/compute.infrapi.io/v1/-/healthz`,
+  `-/readyz`, `-/metrics`, `-/openapi.json` and `-/docs`. `WithReadiness` makes
+  `-/readyz` fail while EC2 does not answer, so a load balancer stops sending
+  traffic.
 - `server.APIGroup` mounts the routes under the group's path, and answers 404
   for a namespace that is not a lower-case DNS label, before your handler
   runs.
@@ -422,9 +423,9 @@ export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test
 ## Call it
 
 ```bash
-API=http://127.0.0.1:8080/apis/compute.example.com/v1/namespaces
+API=http://127.0.0.1:8080/apis/compute.infrapi.io/v1/namespaces
 
-curl -s localhost:8080/-/readyz
+curl -s localhost:8080/apis/compute.infrapi.io/v1/-/readyz
 curl -s -X POST $API/acme/instance -H 'Content-Type: application/json' \
   -d '{"name": "web-1", "size": "small"}'
 ```
@@ -458,7 +459,8 @@ curl -s $API/globex/instance/$ID
 {"title":"Not found","status":404,"detail":"no instance \"i-e91f1fd9eca53182d\" in namespace \"globex\"","code":"not_found","retryable":false}
 ```
 
-`/-/docs` shows the routes in Swagger UI, and `/-/metrics` already counts
+`/apis/compute.infrapi.io/v1/-/docs` shows the routes in Swagger UI, and
+`-/metrics` beside it already counts
 every request by route and status.
 
 ## Run it against AWS

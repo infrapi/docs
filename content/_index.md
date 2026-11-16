@@ -34,8 +34,8 @@ steps:
     lang: bash
     code: |
       systemctl enable --now tofu-api@aws
-      # contract at /-/openapi/aws/v1.json
-      # Swagger UI at /-/docs
+      # contract at /aws/v1/-/openapi/aws/v1.json
+      # Swagger UI at /aws/v1/-/docs
   - title: Call
     text: Any caller gets a plain REST API, checked against the contract, scoped to its namespace.
     lang: bash

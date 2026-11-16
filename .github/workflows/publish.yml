@@ -31,7 +31,7 @@ jobs:
 
       # Each product's docs/ only, at the tip of main by default. To publish
       # another branch of a product (e.g. before its docs are merged), set the
-      # repository variable DOCS_REF_KAYRA, DOCS_REF_TOFU_API or DOCS_REF_LIB
+      # repository variable DOCS_REF_KAYRA, DOCS_REF_TOFU_API, DOCS_REF_LIB, DOCS_REF_DEV or DOCS_REF_CLI
       # (Settings > Secrets and variables > Actions > Variables).
       # Public repositories: no token needed. For a private one, add `token:`.
       - name: Check out kayra docs
@@ -43,13 +43,19 @@ jobs:
       - name: Check out lib docs
         uses: actions/checkout@v7
         with: { repository: infrapi/lib, ref: "${{ vars.DOCS_REF_LIB || 'main' }}", path: _repos/lib, sparse-checkout: docs }
+      - name: Check out cli docs
+        uses: actions/checkout@v7
+        with: { repository: infrapi/cli, ref: "${{ vars.DOCS_REF_CLI || 'main' }}", path: _repos/cli, sparse-checkout: docs }
+      - name: Check out dev docs
+        uses: actions/checkout@v7
+        with: { repository: infrapi/dev, ref: "${{ vars.DOCS_REF_DEV || 'main' }}", path: _repos/dev, sparse-checkout: docs }
 
       # Same check as `make check-repos`: a clear error instead of Hugo's
       # "invalid YAML delimiter" when a product's docs are not migrated.
       - name: Check product docs are portal-ready
         run: |
           bad=0
-          for r in kayra tofu-api lib; do
+          for r in kayra tofu-api lib dev cli; do
             f="_repos/$r/docs/index.md"
             if [ ! -f "$f" ]; then
               echo "::error file=$f::infrapi/$r ($(git -C _repos/$r rev-parse --abbrev-ref HEAD)) has no docs/index.md"; bad=1

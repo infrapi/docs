@@ -1,4 +1,4 @@
-// InfraPI portal: search, copy buttons, tutorial filters, active TOC entry,
+// InfraPI portal: search, copy buttons, code tabs, tutorial filters, active TOC entry,
 // closing header menus. No dependencies.
 (() => {
   "use strict";
@@ -41,6 +41,83 @@
     });
     wrap.appendChild(btn);
   });
+
+  // ---------- code tabs ----------
+  // Two or more consecutive "**label**" paragraphs, each followed by a code
+  // block, render as tabs: the portable way docs write alternatives
+  // (**infrapi-cli**, then **curl**), which github.com shows one after the
+  // other. Picking a tab picks it in every group of the page, and is
+  // remembered.
+  const TAB_KEY = "infrapi.code-tab";
+  const isLabel = (el) => el && el.tagName === "P" && el.children.length === 1 &&
+    el.firstElementChild.tagName === "STRONG" && el.textContent.trim() === el.firstElementChild.textContent.trim();
+  const isCode = (el) => el && (el.matches(".highlight, pre, .copy-wrap"));
+  const groups = [];
+  document.querySelectorAll(".prose p").forEach((p) => {
+    if (!isLabel(p) || !isCode(p.nextElementSibling)) return;
+    const prev = p.previousElementSibling;
+    if (isCode(prev) && isLabel(prev.previousElementSibling)) return; // not the first pair
+    const pairs = [];
+    for (let l = p; isLabel(l) && isCode(l.nextElementSibling); l = l.nextElementSibling.nextElementSibling) {
+      pairs.push([l, l.nextElementSibling]);
+    }
+    if (pairs.length >= 2) groups.push(pairs);
+  });
+  const tabSets = [];
+  groups.forEach((pairs, g) => {
+    const box = document.createElement("div");
+    box.className = "code-tabs";
+    const list = document.createElement("div");
+    list.className = "code-tabs__list";
+    list.setAttribute("role", "tablist");
+    box.appendChild(list);
+    pairs[0][0].parentNode.insertBefore(box, pairs[0][0]);
+    const tabs = pairs.map(([label, code], i) => {
+      const name = label.textContent.trim();
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.className = "code-tabs__tab";
+      tab.id = `code-tab-${g}-${i}`;
+      tab.textContent = name;
+      tab.setAttribute("role", "tab");
+      const panel = document.createElement("div");
+      panel.className = "code-tabs__panel";
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", tab.id);
+      panel.appendChild(code);
+      label.remove();
+      list.appendChild(tab);
+      box.appendChild(panel);
+      tab.addEventListener("click", () => select(name));
+      return { name, tab, panel };
+    });
+    list.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const i = tabs.findIndex((t) => t.tab === document.activeElement);
+      if (i < 0) return;
+      const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      select(next.name); next.tab.focus();
+    });
+    tabSets.push(tabs);
+  });
+  function show(tabs, name) {
+    const pick = tabs.find((t) => t.name === name) || tabs[0];
+    tabs.forEach((t) => {
+      const on = t === pick;
+      t.tab.setAttribute("aria-selected", String(on));
+      t.tab.tabIndex = on ? 0 : -1;
+      t.panel.hidden = !on;
+    });
+  }
+  function select(name) {
+    tabSets.forEach((tabs) => show(tabs, name));
+    try { localStorage.setItem(TAB_KEY, name); } catch (_) { /* storage unavailable */ }
+  }
+  if (tabSets.length) {
+    let saved = null;
+    try { saved = localStorage.getItem(TAB_KEY); } catch (_) { /* storage unavailable */ }
+    tabSets.forEach((tabs) => show(tabs, saved));
+  }
 
   // ---------- tutorial filters ----------
   const filters = document.querySelector("[data-filters]");

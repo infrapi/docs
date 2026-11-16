@@ -9,11 +9,25 @@
     <p class="lead">{{ .Description }}</p>
   </div>
 </section>
+{{ with site.GetPage "/products/dev/docs" }}{{ $dev := index $products.items "dev" }}
+<section class="section section--tight">
+  <div class="wrap">
+    <a class="card card--link learn-env" href="{{ .RelPermalink }}">
+      <span class="hub-icon">{{ partial "icon.html" $dev.icon }}</span>
+      <div>
+        <p class="eyebrow">Your environment</p>
+        <h3>Run InfraPI on your machine</h3>
+        <p>{{ $dev.summary }}</p>
+      </div>
+    </a>
+  </div>
+</section>
+{{ end }}
 <section class="section section--tight">
   <div class="wrap">
     <div class="filters" role="group" aria-label="Filter by product" data-filters>
       <button type="button" class="filter" aria-pressed="true" data-filter="">All</button>
-      {{ range $products.order }}<button type="button" class="filter" aria-pressed="false" data-filter="{{ . }}">{{ (index $products.items .).name }}</button>{{ end }}
+      {{ range $products.order }}{{ if where $.Pages "Params.products" "intersect" (slice .) }}<button type="button" class="filter" aria-pressed="false" data-filter="{{ . }}">{{ (index $products.items .).name }}</button>{{ end }}{{ end }}
     </div>
     <div class="card-grid card-grid--3" data-filter-target>
       {{ range .Pages.ByWeight }}{{ partial "tutorial-card.html" . }}{{ end }}

@@ -13,7 +13,7 @@ problems:
 
 features:
   - title: Authentication
-    text: Bearer tokens from your OIDC identity provider, personal access tokens, and a portable `kayra-cli` to log in with.
+    text: Bearer tokens from your OIDC identity provider, personal access tokens, and a portable [`infrapi-cli`](/products/cli/docs/) to log in with.
   - title: RBAC
     text: "`Group`, `Role`, `RoleBinding`, cluster- and namespace-scoped, gated by real directory groups rather than a synced list."
   - title: Namespaces
@@ -25,7 +25,7 @@ facts:
   - k: Storage
     v: etcd, or local files for development
   - k: Binaries
-    v: "`kayra` (server, reconciler) and `kayra-cli` (end users)"
+    v: "`kayra` (server, reconciler); end users run `infrapi-cli`"
   - k: Built on
     v: "[lib](../lib/)"
 

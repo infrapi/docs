@@ -14,7 +14,7 @@
         <span><strong>{{ $p.name }}</strong> {{ partial "status.html" $p }}</span>
         <span class="docs-nav-toggle">{{ partial "icon.html" "menu" }}</span>
       </summary>
-      <a class="docs-nav-hub" href="{{ printf "products/%s/" $slug | relURL }}">{{ partial "icon.html" "arrow" }} Product overview</a>
+      {{ if ne $p.hub false }}<a class="docs-nav-hub" href="{{ printf "products/%s/" $slug | relURL }}">{{ partial "icon.html" "arrow" }} Product overview</a>{{ end }}
       <nav>
         <ul>
           {{ range $entries }}
@@ -39,8 +39,8 @@
 
   <article class="docs-article">
     <nav class="crumbs" aria-label="Breadcrumb">
-      <a href="{{ printf "products/%s/" $slug | relURL }}">{{ $p.name }}</a><span>/</span>
-      <a href="{{ printf "products/%s/docs/" $slug | relURL }}">Docs</a>
+      {{ if ne $p.hub false }}<a href="{{ printf "products/%s/" $slug | relURL }}">{{ $p.name }}</a><span>/</span>{{ end }}
+      <a href="{{ printf "products/%s/docs/" $slug | relURL }}">{{ if eq $p.hub false }}{{ $p.name }} docs{{ else }}Docs{{ end }}</a>
     </nav>
     <div class="prose">
       {{ .Content }}
