@@ -37,13 +37,14 @@ steps:
       # contract at /aws/v1/-/openapi/aws/v1.json
       # Swagger UI at /aws/v1/-/docs
   - title: Call
-    text: Any caller gets a plain REST API, checked against the contract, scoped to its namespace.
+    text: Any caller gets a plain REST API, checked against the contract, scoped to its namespace — and AI agents the same API over MCP.
     lang: bash
     code: |
       curl -X POST \
         :8080/aws/v1/namespaces/acme/instance \
         -d '{"ami":"ami-0abc…",
              "instance_type":"t3.micro"}'
+      # AI agents: MCP at /aws/v1/-/mcp
 
 why:
   - icon: puzzle

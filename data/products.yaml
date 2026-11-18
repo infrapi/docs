@@ -22,8 +22,8 @@ items:
     version: v0.6   # fallback only: the portal shows the latest GitHub release
     status: early
     icon: api
-    tagline: Any OpenTofu provider as a REST API.
-    summary: An OpenAPI contract generated from the provider's schemas, rules in one YAML file per provider, no code per resource.
+    tagline: Any OpenTofu provider as a REST API, and as MCP tools for AI agents.
+    summary: An OpenAPI contract generated from the provider's schemas, MCP tools generated from the contract, rules in one YAML file per provider, no code per resource.
 
   lib:
     name: lib
@@ -33,7 +33,7 @@ items:
     status: preview
     icon: blocks
     tagline: The Go foundation of every InfraPI service.
-    summary: URL layout, auth, contract enforcement, RFC 9457 errors, metrics, tracing and Vault, shared by every service.
+    summary: URL layout, auth, contract enforcement, RFC 9457 errors, MCP for AI agents, metrics, tracing and Vault, shared by every service.
 
   # infrapi-cli: docs only for now (in `docs`, not in `order`), no hub
   # page; release: false until infrapi/cli has a first GitHub release
