@@ -107,7 +107,7 @@ It adds `instances` to the contract, five operations under
 Then generate the Go code from it:
 
 ```bash
-make generate
+infrapi-cli app generate
 ```
 
 `api/zz_generated.go` has the `Instance` type, and
