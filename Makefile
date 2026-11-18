@@ -1,6 +1,6 @@
 # InfraPI portal — local workflow
 #
-#   make dev      link ../kayra ../tofu-api ../lib ../dev ../cli and serve with live reload
+#   make dev      link ../kayra ../tofu-api ../lib ../cli and serve with live reload
 #   make check    build exactly as CI does (fails on broken links/anchors)
 #   make help     everything else
 
@@ -14,7 +14,7 @@ HUGO_VERSION ?= v0.169.0
 
 # where your checkouts of the product repositories live, for `make link`
 LOCAL ?= ..
-REPOS := kayra tofu-api lib dev cli
+REPOS := kayra tofu-api lib cli
 PORT  ?= 1313
 
 .PHONY: help dev link check-repos fetch releases serve check build open clean install-hugo hugo-ok

@@ -2,7 +2,7 @@
 # pages and the docs pages' "edit on GitHub" links.
 order: [kayra, tofu-api, lib]
 # the Docs menus: the products', then docs that are not a product's
-docs: [kayra, cli, tofu-api, lib, dev]
+docs: [kayra, cli, tofu-api, lib]
 
 items:
   kayra:
@@ -47,18 +47,4 @@ items:
     status: preview
     icon: terminal
     tagline: InfraPI's command line.
-    summary: Log in to Kayra and call its API, and scaffold and run a local dev stack, from one binary, infrapi-cli.
-
-  # the dev environment: docs only (in `docs`, not in `order`), no hub page
-  # (hub: false), no GitHub release to read (release: false)
-  dev:
-    name: dev
-    repo: infrapi/dev
-    branch: main
-    version: main
-    release: false
-    hub: false
-    status: preview
-    icon: server
-    tagline: InfraPI on your machine, to build an API against.
-    summary: Kayra, its reconciler, etcd and APISIX on podman, one Makefile, no external connection, and an example API to start from.
+    summary: Log in to Kayra and call its API, create an API project and grow it from its contract, and run a local dev stack, from one binary, infrapi-cli.

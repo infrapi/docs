@@ -1,325 +1,337 @@
 ---
-title: Build an EC2 instance API with lib
-description: Write your own platform service in Go with infrapi/lib and the AWS SDK for Go v2 — tenant-scoped EC2 instances, the platform's sizes, RFC 9457 errors. Runs against a local AWS emulator, no AWS account needed.
-products: [lib]
+title: Build an EC2 instance API
+description: From nothing to a tenant creating EC2 instances through your own API - a Go project from its contract with infrapi-cli, the AWS SDK for Go v2 behind it, Kayra authorizing every call. Runs against a local AWS emulator and a local InfraPI, no AWS account needed.
+products: [lib, kayra]
 level: Intermediate
-duration: 30 min
+duration: 45 min
 weight: 20
 ---
 
 [tofu-api](generate-an-api-contract.md) gets you an API from a Terraform
 provider without code. When you need your own logic, write the service
-yourself: lib gives it the same URL layout, errors, health checks, metrics and
-tracing as every other InfraPI API, and you call AWS with the
-[AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2).
+yourself: `infrapi-cli app` gives it a contract, its Go code and its CI,
+[infrapi/lib](../products/lib/docs/_index.md) the same URL layout, errors,
+health checks and metrics as every other InfraPI API, and you call AWS
+with the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2).
 
-In this tutorial you build `compute`, a service that lets each tenant
-(namespace) create, list and terminate its own EC2 instances, in three sizes
-the platform chooses. You run it against [moto](https://github.com/getmoto/moto),
-a local emulator of the AWS APIs, and only then, if you want, against AWS.
+In this tutorial you build `compute`, an API that lets each tenant
+(namespace) create, list and terminate its own EC2 instances, in three
+sizes the platform chooses. You run it against
+[moto](https://github.com/getmoto/moto), a local emulator of the AWS APIs,
+behind a local InfraPI: a tenant's user calls it, authorized by Kayra.
 
-**You will need:** Go 1.27.3 or later, `curl`, and either Python 3 (`pip`)
-or Docker for moto.
+**You will need:** Go 1.27.3 or later, podman or docker,
+[infrapi-cli](../products/cli/docs/getting-started.md#1-install), `make`,
+`curl`, and Python 3 (`pip`) or podman/docker for moto.
 
-## Create the module
+Each step does the least it needs, and links where it is explained in
+full: [Develop an API](../products/cli/docs/develop/develop-an-api.md) for the
+project, [The dev stack](../products/cli/docs/develop/dev-stack.md) for the
+local InfraPI.
+
+## 1. Create the project
 
 ```bash
-mkdir compute && cd compute
-go mod init infrapi.io/compute
-go get github.com/infrapi/lib@v0.12.1 \
-  github.com/aws/aws-sdk-go-v2/config \
+infrapi-cli app init compute --no-prompt --module example.com/compute --ci none
+cd compute
+go get github.com/aws/aws-sdk-go-v2/config \
   github.com/aws/aws-sdk-go-v2/service/ec2 \
   github.com/aws/aws-sdk-go-v2/service/ssm \
   github.com/aws/smithy-go
 ```
 
-> [!IMPORTANT]
-> Pin `@v0.12.1`. Without a version, `go get` picks older `v1.x` tags, which
-> lack `pkg/api` and `server.APIGroup`.
+`app init` writes a Go module on infrapi/lib: its contract,
+`api/compute-v1.yaml`, the server, `cmd/compute/main.go`, its settings,
+`internal/config`, and its dev stack's settings, `dev.yaml`. Without
+`--no-prompt` it asks for the module, the API group, the CI and what a
+release builds. See [app init](../products/cli/docs/app.md#app-init).
 
-lib reads its configuration from a dotenv file, never from the environment.
-Create `.env` next to `go.mod`:
+## 2. Start a local InfraPI
 
 ```bash
-INFRAPI_APP_NAME="compute"
-INFRAPI_APP_PLATFORM="sandbox"
-INFRAPI_APP_REGION="eu-west-1"
-INFRAPI_APP_LOCATION="dc1"
-INFRAPI_APP_URL="http://localhost:8080"
-INFRAPI_APP_LISTEN_ADDRESS="127.0.0.1:8080"
+infrapi-cli dev init
+infrapi-cli dev up
+infrapi-cli dev contexts
 ```
 
-What each key means is in the [config reference](../products/lib/docs/packages/config.md).
+Kayra, its reconciler, etcd and APISIX run in containers, configured by
+`dev.yaml`. `dev contexts` saves three `infrapi-cli` contexts on the
+gateway, `http://localhost:9080`: `dev-admin`, the platform's admin and the
+current one, `dev-jdoe`, a user of the tenant you create below, and
+`dev-nobody`. The `curl` examples read their tokens:
 
-## Declare the API
+```bash
+ADMIN=$(infrapi-cli auth context token dev-admin)
+JDOE=$(infrapi-cli auth context token dev-jdoe)
+NOBODY=$(infrapi-cli auth context token dev-nobody)
+GW=http://localhost:9080
+META='"metadata": {"namespace": "acme", "region": "eu-west-1", "platform": "sandbox"}'
+```
 
-Create `main.go`. The sections below are that file, top to bottom: paste
-each one after the previous.
+## 3. Describe the API
+
+```bash
+infrapi-cli app add instance
+```
+
+It adds `instances` to the contract, five operations under
+`/apis/compute.infrapi.io/v1/namespaces/{namespace}/instances`, and an
+`Instance` schema. Make it this API's, in `api/compute-v1.yaml`:
+
+- under `components.schemas.Instance`, `size` required, and what EC2 says
+  of an instance, read only:
+
+  ```yaml
+      Instance:
+        type: object
+        description: An EC2 instance of a namespace.
+        required: [name, size]
+        properties:
+          name: …          # as app add wrote them
+          created_at: …
+          size:
+            type: string
+            enum: [small, medium, large]
+            description: The platform's sizes, t3.micro, t3.small and t3.medium.
+          id: {type: string, readOnly: true, description: EC2's instance id.}
+          state: {type: string, readOnly: true, description: pending, running, stopping or stopped.}
+          private_ip: {type: string, readOnly: true}
+          zone: {type: string, readOnly: true}
+  ```
+
+- an instance is not resized: remove the `put` operation,
+  `replaceInstance`, of `.../instances/{name}`;
+- terminating takes EC2 a minute: the `delete` answers `'202'`,
+  `description: The instance terminating.`, instead of `'204'`.
+
+Then generate the Go code from it:
+
+```bash
+make generate
+```
+
+`api/zz_generated.go` has the `Instance` type, and
+`internal/compute/zz_generated.go` the `Handlers` your service implements:
 
 ```go
-// Command compute is an EC2 instance API built on infrapi/lib: one API group,
-// three routes, each tenant's instances kept apart by a tag.
-package main
+type Handlers interface {
+	ListInstances(ctx context.Context, namespace string) ([]api.Instance, error)
+	CreateInstance(ctx context.Context, namespace string, body api.Instance) (api.Instance, error)
+	GetInstance(ctx context.Context, namespace, name string) (api.Instance, error)
+	DeleteInstance(ctx context.Context, namespace, name string) error
+}
+```
+
+The contract is enforced before your code runs: a `size` of `huge`, a
+missing `name`, is a `400` EC2 never sees.
+
+## 4. Configure it
+
+The service needs one setting of its own: the SSM parameter naming the AMI
+instances boot. In `internal/config/config.go`, add it to `Config`:
+
+```go
+	// AMIParameter is the SSM parameter naming the AMI instances boot:
+	// COMPUTE_AMI_PARAMETER, the latest Amazon Linux 2023 by default.
+	AMIParameter string
+```
+
+and read it in `Load`, before its `return`:
+
+```go
+	ami, err := vars.GetString(&libconfig.VariableOpts{
+		Key:     "COMPUTE_AMI_PARAMETER",
+		Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Config{App: app, AuthURL: authURL, AMIParameter: ami}, nil
+```
+
+AWS's own settings, the credentials and the region, the SDK reads its usual
+way. In `cmd/compute/main.go`, build the service with them: replace
+`compute.Register(…, compute.New())` with
+
+```go
+	// AWS credentials and region the SDK's usual way: the environment,
+	// ~/.aws, or an instance role
+	aws, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return err
+	}
+	compute.Register(engine.Group("", kayra.RequireAccess()), compute.New(aws, cfg.AMIParameter))
+```
+
+with `awsconfig "github.com/aws/aws-sdk-go-v2/config"` imported.
+
+## 5. Write the service
+
+`internal/compute/compute.go`: the service, its AWS clients, the platform's
+sizes, and how an AWS error becomes the caller's.
+
+```go
+// Package compute is the compute API's implementation: Service implements
+// Handlers, the operations of its contracts (zz_generated.go), on EC2.
+package compute
 
 import (
-	"context"
 	"errors"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/smithy-go"
-	"github.com/gin-gonic/gin"
-
-	"github.com/infrapi/lib/pkg/api"
-	"github.com/infrapi/lib/pkg/config"
 	infraerrors "github.com/infrapi/lib/pkg/errors"
-	"github.com/infrapi/lib/pkg/listener"
-	"github.com/infrapi/lib/pkg/server"
 )
 
-// compute is served under /apis/compute.infrapi.io/v1/namespaces/:namespace.
-var compute = api.Group{Name: "compute.infrapi.io", Version: "v1"}
+// namespaceTag tags each instance with the namespace that owns it.
+const namespaceTag = "infrapi:namespace"
 
-// sizes are the only instance types a caller can get: the platform's
-// choice, not the caller's.
+// sizes are the platform's sizes, the only instance types it offers.
 var sizes = map[string]types.InstanceType{
 	"small":  types.InstanceTypeT3Micro,
 	"medium": types.InstanceTypeT3Small,
 	"large":  types.InstanceTypeT3Medium,
 }
 
-// amiParameter is the public SSM parameter AWS keeps pointing at the latest
-// Amazon Linux 2023 AMI, in every region.
-const amiParameter = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-
-// namespaceTag records which namespace (tenant) an instance belongs to.
-const namespaceTag = "infrapi:namespace"
-
-type service struct {
-	ec2 *ec2.Client
-	ssm *ssm.Client
+// Service is the API, on EC2.
+type Service struct {
+	ec2          *ec2.Client
+	ssm          *ssm.Client
+	amiParameter string
 }
 
-type instanceRequest struct {
-	Name string `json:"name" binding:"required"`
-	Size string `json:"size" binding:"required"`
+// New is the Service, ready to Register: AWS's configuration, and the SSM
+// parameter naming the AMI instances boot.
+func New(cfg aws.Config, amiParameter string) *Service {
+	return &Service{ec2: ec2.NewFromConfig(cfg), ssm: ssm.NewFromConfig(cfg), amiParameter: amiParameter}
 }
 
-type instance struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Size      string `json:"size"`
-	State     string `json:"state"`
-	PrivateIP string `json:"private_ip,omitempty"`
-	Zone      string `json:"zone"`
-}
-```
-
-- `compute` is the API group. lib's [api](../products/lib/docs/packages/api.md)
-  package turns it into the layout every InfraPI service shares:
-  `/apis/compute.infrapi.io/v1/namespaces/<namespace>/instance`.
-- `sizes` is the platform's choice of instance types. Callers ask for
-  `small`, never for `t3.micro`, so you can change the mapping later
-  without breaking them.
-- The `infrapi:namespace` tag records which tenant an instance belongs to.
-  Every read filters on it.
-
-## Wire the service
-
-```go
-func main() {
-	// INFRAPI_APP_* from .env (or INFRAPI_CONFIG_DOTENV_FILE).
-	vars, err := config.NewConfig()
-	if err != nil {
-		log.Fatal(err)
+// awsError turns an AWS SDK error into the problem document the caller
+// gets: whose fault it is, and whether retrying can help.
+func awsError(origin string, err error) error {
+	var apiErr smithy.APIError
+	if !errors.As(err, &apiErr) {
+		// no answer from AWS at all: network, DNS, timeout
+		return infraerrors.Unavailable("%s: %v", origin, err)
 	}
-	cfg, err := vars.GetAppConfig()
-	if err != nil {
-		log.Fatal(err)
+	switch code := apiErr.ErrorCode(); code {
+	case "AuthFailure", "UnauthorizedOperation", "InvalidClientTokenId", "ExpiredToken", "AccessDeniedException":
+		return infraerrors.UpstreamAuth("%s: AWS refused this service's credentials (%s)", origin, code)
+	case "RequestLimitExceeded", "InsufficientInstanceCapacity", "ThrottlingException":
+		return infraerrors.Upstream(true, "%s: %s", origin, apiErr.ErrorMessage())
+	default:
+		return infraerrors.Upstream(false, "%s: %s: %s", origin, code, apiErr.ErrorMessage())
 	}
-
-	// AWS credentials and region the SDK's usual way: environment, shared
-	// config, or an instance role.
-	awsCfg, err := awsconfig.LoadDefaultConfig(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	s := &service{ec2: ec2.NewFromConfig(awsCfg), ssm: ssm.NewFromConfig(awsCfg)}
-
-	engine, err := server.NewServerGin(cfg, []string{compute.Root()}, server.WithReadiness(s.ready))
-	if err != nil {
-		log.Fatal(err)
-	}
-	v1, err := server.APIGroup(engine, compute)
-	if err != nil {
-		log.Fatal(err)
-	}
-	v1.GET("/instance", s.list)
-	v1.POST("/instance", s.create)
-	v1.GET("/instance/:id", s.get)
-	v1.DELETE("/instance/:id", s.delete)
-
-	ln, err := listener.Listen(cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	srv := &http.Server{Handler: engine, ReadHeaderTimeout: 5 * time.Second}
-	go func() {
-		stop := make(chan os.Signal, 1)
-		signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-		<-stop
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		_ = srv.Shutdown(ctx)
-	}()
-	log.Printf("compute API on http://%s%s", ln.Addr(), compute.Root())
-	if err := srv.Serve(ln); !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
-	}
-}
-
-// ready is <root>/-/readyz: the service is ready when EC2 answers.
-func (s *service) ready(ctx context.Context) error {
-	_, err := s.ec2.DescribeAvailabilityZones(ctx, &ec2.DescribeAvailabilityZonesInput{})
-	return err
 }
 ```
 
-- `config.NewConfig` and `GetAppConfig` load `.env`.
-- `awsconfig.LoadDefaultConfig` finds AWS credentials and the region the
-  usual way: environment variables, `~/.aws`, or an instance role.
-- `server.NewServerGin` returns a gin engine that already serves, under the
-  group's root `compute.Root()`, `/apis/compute.infrapi.io/v1/-/healthz`,
-  `-/readyz`, `-/metrics`, `-/openapi.json` and `-/docs`. `WithReadiness` makes
-  `-/readyz` fail while EC2 does not answer, so a load balancer stops sending
-  traffic.
-- `server.APIGroup` mounts the routes under the group's path, and answers 404
-  for a namespace that is not a lower-case DNS label, before your handler
-  runs.
-- `listener.Listen` opens the socket from `INFRAPI_APP_LISTEN_*`: TCP here,
-  or systemd socket activation in production.
+Errors are [`infraerrors`](../products/lib/docs/packages/errors.md) values:
+the generated code answers them as RFC 9457 problem documents. `awsError`
+decides whose fault an AWS error is: refused credentials are a 502
+`upstream_auth` for your operators, throttling a retryable 502. Callers
+branch on `code` and `retryable` the same way for every InfraPI API.
 
-## Create an instance
+`internal/compute/instances.go`, written by `app add` with each operation
+answering 501: replace it with the operations on EC2.
 
 ```go
-func (s *service) create(c *gin.Context) {
-	var req instanceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		server.AbortError(c, infraerrors.Invalid("%s", err))
-		return
-	}
-	instanceType, ok := sizes[req.Size]
-	if !ok {
-		server.AbortError(c, infraerrors.Invalid("unknown size %q: use small, medium or large", req.Size))
-		return
-	}
+package compute
 
-	ctx := c.Request.Context()
-	ami, err := s.ssm.GetParameter(ctx, &ssm.GetParameterInput{Name: aws.String(amiParameter)})
+import (
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	infraerrors "github.com/infrapi/lib/pkg/errors"
+
+	"example.com/compute/api"
+)
+
+// ListInstances: List the instances of a namespace.
+func (s *Service) ListInstances(ctx context.Context, namespace string) ([]api.Instance, error) {
+	found, err := s.describe(ctx, namespace, nil)
 	if err != nil {
-		server.AbortError(c, awsError("ssm.GetParameter", err))
-		return
+		return nil, err
 	}
+	out := make([]api.Instance, 0, len(found))
+	for _, i := range found {
+		out = append(out, view(i))
+	}
+	return out, nil
+}
 
+// CreateInstance: Create an instance.
+func (s *Service) CreateInstance(ctx context.Context, namespace string, body api.Instance) (api.Instance, error) {
+	if _, err := s.find(ctx, namespace, body.Name); err == nil {
+		return api.Instance{}, infraerrors.AlreadyExists(nil, "instance %q already exists in namespace %q", body.Name, namespace)
+	}
+	ami, err := s.ssm.GetParameter(ctx, &ssm.GetParameterInput{Name: aws.String(s.amiParameter)})
+	if err != nil {
+		return api.Instance{}, awsError("ssm.GetParameter", err)
+	}
 	out, err := s.ec2.RunInstances(ctx, &ec2.RunInstancesInput{
 		ImageId:      ami.Parameter.Value,
-		InstanceType: instanceType,
+		InstanceType: sizes[body.Size], // the contract allows small, medium and large only
 		MinCount:     aws.Int32(1),
 		MaxCount:     aws.Int32(1),
 		TagSpecifications: []types.TagSpecification{{
 			ResourceType: types.ResourceTypeInstance,
 			Tags: []types.Tag{
-				{Key: aws.String("Name"), Value: aws.String(req.Name)},
-				{Key: aws.String(namespaceTag), Value: aws.String(server.Namespace(c))},
+				{Key: aws.String("Name"), Value: aws.String(body.Name)},
+				{Key: aws.String(namespaceTag), Value: aws.String(namespace)},
 			},
 		}},
 	})
 	if err != nil {
-		server.AbortError(c, awsError("ec2.RunInstances", err))
-		return
+		return api.Instance{}, awsError("ec2.RunInstances", err)
 	}
-	c.JSON(http.StatusCreated, view(out.Instances[0]))
-}
-```
-
-The caller sends a name and a size. Everything else is the platform's
-decision: the AMI is the latest Amazon Linux 2023, read from the public SSM
-parameter AWS keeps up to date, and the instance is tagged with the
-namespace from the URL, not from the body. A tenant cannot create an
-instance for another one.
-
-Errors are [`infraerrors`](../products/lib/docs/packages/errors.md) values.
-`server.AbortError` writes them as an RFC 9457 problem document, with the
-request's correlation id.
-
-## Read and terminate, per tenant
-
-```go
-func (s *service) list(c *gin.Context) {
-	found, err := s.describe(c.Request.Context(), server.Namespace(c), nil)
-	if err != nil {
-		server.AbortError(c, err)
-		return
-	}
-	items := []instance{}
-	for _, i := range found {
-		items = append(items, view(i))
-	}
-	c.JSON(http.StatusOK, gin.H{"items": items})
+	return view(out.Instances[0]), nil
 }
 
-func (s *service) get(c *gin.Context) {
-	i, err := s.find(c)
+// GetInstance: Get an instance.
+func (s *Service) GetInstance(ctx context.Context, namespace, name string) (api.Instance, error) {
+	i, err := s.find(ctx, namespace, name)
 	if err != nil {
-		server.AbortError(c, err)
-		return
+		return api.Instance{}, err
 	}
-	c.JSON(http.StatusOK, view(i))
+	return view(i), nil
 }
 
-func (s *service) delete(c *gin.Context) {
-	i, err := s.find(c)
+// DeleteInstance: Delete an instance.
+func (s *Service) DeleteInstance(ctx context.Context, namespace, name string) error {
+	i, err := s.find(ctx, namespace, name)
 	if err != nil {
-		server.AbortError(c, err)
-		return
+		return err
 	}
-	_, err = s.ec2.TerminateInstances(c.Request.Context(), &ec2.TerminateInstancesInput{InstanceIds: []string{*i.InstanceId}})
+	_, err = s.ec2.TerminateInstances(ctx, &ec2.TerminateInstancesInput{InstanceIds: []string{aws.ToString(i.InstanceId)}})
 	if err != nil {
-		server.AbortError(c, awsError("ec2.TerminateInstances", err))
-		return
+		return awsError("ec2.TerminateInstances", err)
 	}
-	c.Status(http.StatusAccepted) // terminating: it takes EC2 a minute or two
+	return nil // 202: terminating takes EC2 a minute or two
 }
 
-// find is the instance named in the path, if it belongs to the namespace in
-// the path. An instance of another namespace is a 404, as if it did not
-// exist: a tenant does not learn what other tenants have.
-func (s *service) find(c *gin.Context) (types.Instance, error) {
-	id := c.Param("id")
-	found, err := s.describe(c.Request.Context(), server.Namespace(c), []types.Filter{
-		{Name: aws.String("instance-id"), Values: []string{id}},
-	})
+// find is the namespace's instance of that name. Another namespace's is a
+// 404, as if it did not exist.
+func (s *Service) find(ctx context.Context, namespace, name string) (types.Instance, error) {
+	found, err := s.describe(ctx, namespace, []types.Filter{{Name: aws.String("tag:Name"), Values: []string{name}}})
 	if err != nil {
 		return types.Instance{}, err
 	}
 	if len(found) == 0 {
-		return types.Instance{}, infraerrors.NotFound("no instance %q in namespace %q", id, server.Namespace(c))
+		return types.Instance{}, infraerrors.NotFound("no instance %q in namespace %q", name, namespace)
 	}
 	return found[0], nil
 }
 
-// describe lists the namespace's instances, terminated ones excluded, with
+// describe lists the namespace's instances, terminated ones left out, with
 // any extra filters.
-func (s *service) describe(ctx context.Context, namespace string, filters []types.Filter) ([]types.Instance, error) {
+func (s *Service) describe(ctx context.Context, namespace string, filters []types.Filter) ([]types.Instance, error) {
 	filters = append(filters,
 		types.Filter{Name: aws.String("tag:" + namespaceTag), Values: []string{namespace}},
 		types.Filter{Name: aws.String("instance-state-name"), Values: []string{"pending", "running", "stopping", "stopped"}},
@@ -337,21 +349,16 @@ func (s *service) describe(ctx context.Context, namespace string, filters []type
 	}
 	return found, nil
 }
-```
 
-`find` asks EC2 for the instance *and* the namespace tag together. An
-instance of another namespace comes back as a 404, exactly like one that
-does not exist, so a tenant cannot probe what others have.
-
-## Map AWS errors
-
-```go
 // view is what callers see of an instance: the platform's names, not EC2's.
-func view(i types.Instance) instance {
-	out := instance{
+func view(i types.Instance) api.Instance {
+	out := api.Instance{
 		ID:        aws.ToString(i.InstanceId),
 		PrivateIP: aws.ToString(i.PrivateIpAddress),
-		Zone:      aws.ToString(i.Placement.AvailabilityZone),
+		CreatedAt: aws.ToTime(i.LaunchTime),
+	}
+	if i.Placement != nil {
+		out.Zone = aws.ToString(i.Placement.AvailabilityZone)
 	}
 	if i.State != nil {
 		out.State = string(i.State.Name)
@@ -368,128 +375,189 @@ func view(i types.Instance) instance {
 	}
 	return out
 }
-
-// awsError turns an AWS SDK error into the problem document the caller
-// gets: whose fault it is, and whether retrying can help.
-func awsError(origin string, err error) error {
-	var apiErr smithy.APIError
-	if !errors.As(err, &apiErr) {
-		// no answer from AWS at all: network, DNS, timeout
-		return infraerrors.Unavailable("%s: %v", origin, err)
-	}
-	switch code := apiErr.ErrorCode(); code {
-	case "InvalidInstanceID.Malformed", "InvalidInstanceID.NotFound":
-		return infraerrors.NotFound("%s", apiErr.ErrorMessage())
-	case "AuthFailure", "UnauthorizedOperation", "InvalidClientTokenId", "ExpiredToken", "AccessDeniedException":
-		return infraerrors.UpstreamAuth("%s: AWS refused this service's credentials (%s)", origin, code)
-	case "RequestLimitExceeded", "InsufficientInstanceCapacity", "ThrottlingException":
-		return infraerrors.Upstream(true, "%s: %s", origin, apiErr.ErrorMessage())
-	default:
-		return infraerrors.Upstream(false, "%s: %s: %s", origin, code, apiErr.ErrorMessage())
-	}
-}
 ```
 
-`view` shows callers the platform's vocabulary (`size: small`), not EC2's.
-`awsError` decides whose fault an AWS error is: a missing instance is a
-404, refused credentials a 502 `upstream_auth` for your operators, throttling
-a retryable 502. Callers branch on `code` and `retryable` the same way for
-every InfraPI API.
+The caller sends a name and a size. Everything else is the platform's
+decision: the AMI is the latest Amazon Linux 2023, read from the public SSM
+parameter AWS keeps up to date, and the instance is tagged with the
+namespace from the URL, never from the body: a tenant cannot create an
+instance for another one. Who may call which operation in which namespace,
+Kayra decides before your code runs.
 
-Check that it builds:
+`instances_test.go`, also written by `app add`, checks the 501s: remove it,
+or make it yours, against moto say. Then check it builds:
 
 ```bash
-go vet . && go build -o compute .
+make lint test build
 ```
 
-## Run it against moto
+## 6. Run it against moto
 
-Start moto in another terminal, with pip or with Docker:
+Start moto in another terminal, with pip or with a container:
 
 ```bash
 pip install 'moto[server]' && moto_server -p 5000
-# or: docker run --rm -p 5000:5000 motoserver/moto
+# or: podman run --rm -p 5000:5000 docker.io/motoserver/moto
 ```
 
-Point the SDK at it — `AWS_ENDPOINT_URL` is read by every AWS SDK — and
-start the service:
+Then run the API in a third one, the SDK pointed at moto:
+`AWS_ENDPOINT_URL` is read by every AWS SDK.
 
 ```bash
 export AWS_ENDPOINT_URL=http://localhost:5000 AWS_REGION=eu-west-1
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test
-./compute
+make run
 ```
 
-## Call it
+`make run` reads the settings `dev init` rendered from `dev.yaml`,
+`.infrapi-dev/app.env`: infrapi/lib's, and `COMPUTE_AUTH_URL`, Kayra
+through the gateway.
+
+## 7. Register it, onboard a tenant
+
+As `dev-admin`, register the API: the gateway routes
+`/apis/compute.infrapi.io/*` to it, and Kayra reads its contract and learns
+its resources.
 
 ```bash
-API=http://127.0.0.1:8080/apis/compute.infrapi.io/v1/namespaces
+infrapi-cli app register
+infrapi-cli apis --api-group compute
+# NAME       SHORTNAME  APIGROUP            NAMESPACED  VERBS
+# instances  compute    compute.infrapi.io  true        create,delete,get,list
+```
 
-curl -s localhost:8080/apis/compute.infrapi.io/v1/-/readyz
-curl -s -X POST $API/acme/instance -H 'Content-Type: application/json' \
+Then a tenant, `acme`: its namespace, its subscription to the API, and the
+RBAC that lets its users, the group `sandbox-thetenant-admins` that `jdoe`
+is in, manage its instances.
+[Develop an API](../products/cli/docs/develop/develop-an-api.md#5-onboard-a-tenant)
+explains each object.
+
+**infrapi-cli**
+
+```bash
+infrapi-cli create system namespaces -d '{"name": "acme"}'
+infrapi-cli create authorization clustergroups \
+  -d "{\"name\": \"acme-admins\", $META, \"groups\": [\"sandbox-core-sysadmin\"]}"
+infrapi-cli create authorization clusterroles \
+  -d "{\"name\": \"acme-admin-role\", $META, \"rules\": [{\"apis\": [\"catalog.infrapi.io\", \"authorization.infrapi.io\"], \"resources\": [\"*\"], \"verbs\": [\"*\"]}]}"
+infrapi-cli create authorization clusterrolebindings \
+  -d "{\"name\": \"acme-admin-binding\", $META, \"role\": \"acme-admin-role\", \"groups\": [\"acme-admins\"]}"
+
+infrapi-cli create catalog -n acme subscriptions -d '{"api": "compute.infrapi.io"}'
+
+infrapi-cli create authorization -n acme groups \
+  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-thetenant-admins\"]}"
+infrapi-cli create authorization -n acme roles \
+  -d "{\"name\": \"instances-admin\", $META, \"rules\": [{\"apis\": [\"compute.infrapi.io\"], \"resources\": [\"instances\"], \"verbs\": [\"*\"]}]}"
+infrapi-cli create authorization -n acme rolebindings \
+  -d "{\"name\": \"devs-instances-admin\", $META, \"role\": \"instances-admin\", \"groups\": [\"devs\"]}"
+```
+
+**curl**
+
+```bash
+H=(-H "Authorization: Bearer $ADMIN" -H "Content-Type: application/json")
+AUTHZ=$GW/apis/authorization.infrapi.io/v1
+
+curl -s -X POST $GW/apis/system.infrapi.io/v1/namespaces "${H[@]}" -d '{"name": "acme"}'
+curl -s -X POST $AUTHZ/clustergroups "${H[@]}" \
+  -d "{\"name\": \"acme-admins\", $META, \"groups\": [\"sandbox-core-sysadmin\"]}"
+curl -s -X POST $AUTHZ/clusterroles "${H[@]}" \
+  -d "{\"name\": \"acme-admin-role\", $META, \"rules\": [{\"apis\": [\"catalog.infrapi.io\", \"authorization.infrapi.io\"], \"resources\": [\"*\"], \"verbs\": [\"*\"]}]}"
+curl -s -X POST $AUTHZ/clusterrolebindings "${H[@]}" \
+  -d "{\"name\": \"acme-admin-binding\", $META, \"role\": \"acme-admin-role\", \"groups\": [\"acme-admins\"]}"
+
+curl -s -X POST $GW/apis/catalog.infrapi.io/v1/namespaces/acme/subscriptions "${H[@]}" -d '{"api": "compute.infrapi.io"}'
+
+curl -s -X POST $AUTHZ/namespaces/acme/groups "${H[@]}" \
+  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-thetenant-admins\"]}"
+curl -s -X POST $AUTHZ/namespaces/acme/roles "${H[@]}" \
+  -d "{\"name\": \"instances-admin\", $META, \"rules\": [{\"apis\": [\"compute.infrapi.io\"], \"resources\": [\"instances\"], \"verbs\": [\"*\"]}]}"
+curl -s -X POST $AUTHZ/namespaces/acme/rolebindings "${H[@]}" \
+  -d "{\"name\": \"devs-instances-admin\", $META, \"role\": \"instances-admin\", \"groups\": [\"devs\"]}"
+```
+
+## 8. Call it
+
+As `jdoe`, a user of `acme`, through the gateway:
+
+**infrapi-cli**
+
+```bash
+infrapi-cli create compute -n acme instances -d '{"name": "web-1", "size": "small"}' --context dev-jdoe
+infrapi-cli get compute -n acme instances web-1 -o json --context dev-jdoe
+# {"name": "web-1", "created_at": "…", "size": "small", "id": "i-e91f1fd9eca53182d", "state": "running", "private_ip": "10.141.238.21", "zone": "eu-west-1a"}
+infrapi-cli get compute -n acme instances --context dev-jdoe
+infrapi-cli delete compute -n acme instances web-1 --context dev-jdoe
+```
+
+**curl**
+
+```bash
+API=$GW/apis/compute.infrapi.io/v1/namespaces/acme/instances
+
+curl -s -X POST $API -H "Authorization: Bearer $JDOE" -H 'Content-Type: application/json' \
   -d '{"name": "web-1", "size": "small"}'
-```
-
-```json
-{"id":"i-e91f1fd9eca53182d","name":"web-1","size":"small","state":"pending","private_ip":"10.141.238.21","zone":"eu-west-1a"}
-```
-
-Keep the `id`, then list, read and terminate:
-
-```bash
-ID=i-e91f1fd9eca53182d                 # yours
-curl -s $API/acme/instance
-curl -s $API/acme/instance/$ID
-curl -s -o /dev/null -w '%{http_code}\n' -X DELETE $API/acme/instance/$ID   # 202
+curl -s $API/web-1 -H "Authorization: Bearer $JDOE"
+curl -s $API -H "Authorization: Bearer $JDOE"
+curl -s -o /dev/null -w '%{http_code}\n' -X DELETE $API/web-1 -H "Authorization: Bearer $JDOE"   # 202
 ```
 
 Now try what the platform refuses:
 
+**infrapi-cli**
+
 ```bash
-# a size the platform does not offer: 400, EC2 is never called
-curl -s -X POST $API/acme/instance -H 'Content-Type: application/json' \
+# a size the platform does not offer: 400, from the contract; EC2 is never called
+infrapi-cli create compute -n acme instances -d '{"name": "web-2", "size": "huge"}' --context dev-jdoe
+# Error: Invalid request (400): request body has an error: doesn't match schema #/components/schemas/Instance: Error at "/size": value is not one of the allowed values ["small","medium","large"]
+
+# someone acme does not know: 403, from Kayra; your code is never called
+infrapi-cli get compute -n acme instances --context dev-nobody
+# Error: Forbidden (403): you are not a member of namespace "acme": …
+```
+
+**curl**
+
+```bash
+curl -s -X POST $API -H "Authorization: Bearer $JDOE" -H 'Content-Type: application/json' \
   -d '{"name": "web-2", "size": "huge"}'
+# {"title":"Invalid request","status":400,"detail":"request body has an error: … value is not one of the allowed values [\"small\",\"medium\",\"large\"]",…}
 
-# another tenant's instance: 404, as if it did not exist
-curl -s $API/globex/instance/$ID
+curl -s $API -H "Authorization: Bearer $NOBODY"
+# {"title":"Forbidden","status":403,"detail":"you are not a member of namespace \"acme\": …",…}
 ```
 
-```json
-{"title":"Invalid request","status":400,"detail":"unknown size \"huge\": use small, medium or large","code":"invalid_request","retryable":false}
-{"title":"Not found","status":404,"detail":"no instance \"i-e91f1fd9eca53182d\" in namespace \"globex\"","code":"not_found","retryable":false}
-```
+`/apis/compute.infrapi.io/v1/-/docs` shows the contract in Swagger UI, and
+`-/metrics` beside it already counts every request by route and status.
 
-`/apis/compute.infrapi.io/v1/-/docs` shows the routes in Swagger UI, and
-`-/metrics` beside it already counts
-every request by route and status.
-
-## Run it against AWS
+## 9. Run it against AWS
 
 > [!WARNING]
 > This creates real, billed instances. Terminate them when you are done.
 
-Unset `AWS_ENDPOINT_URL` and the test keys, then use your usual AWS
-credentials. The region needs a default VPC, since `RunInstances` gets no
-subnet here. The credentials need `ec2:RunInstances`, `ec2:CreateTags`,
-`ec2:DescribeInstances`, `ec2:DescribeAvailabilityZones`,
-`ec2:TerminateInstances` and `ssm:GetParameter`.
+Stop `make run`, unset `AWS_ENDPOINT_URL` and the test keys, then use your
+usual AWS credentials. The region needs a default VPC, since `RunInstances`
+gets no subnet here. The credentials need `ec2:RunInstances`,
+`ec2:CreateTags`, `ec2:DescribeInstances`, `ec2:TerminateInstances` and
+`ssm:GetParameter`.
 
 ```bash
 unset AWS_ENDPOINT_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
 export AWS_PROFILE=my-sandbox AWS_REGION=eu-west-1
-./compute
+make run
 ```
 
 The calls above work unchanged.
 
 ## Next steps
 
-- Require a token and RBAC: pass `server.WithAuth` an authentication
-  middleware, see [auth](../products/lib/docs/packages/auth.md) and
-  [Kayra](../products/kayra/docs/getting-started.md).
+- Ship it: `make snapshot` builds what a release would, archives, deb and
+  rpm packages and the image; the CI, `app init --ci github` or `gitlab`,
+  releases on a tag. See [Ship it](../products/cli/docs/develop/develop-an-api.md#11-ship-it).
 - Give each tenant its own AWS account or role from Vault:
   [vault](../products/lib/docs/packages/vault.md).
-- Call this API from another service with the same `api.Group`:
+- Call this API from another service:
   [client](../products/lib/docs/packages/client.md).
-- Publish and enforce an OpenAPI contract with `server.WithOpenAPI`:
-  [server](../products/lib/docs/packages/server.md).
+- Provision something per tenant when it subscribes: Kayra's
+  [subscriptions](../products/kayra/docs/architecture/subscriptions.md).

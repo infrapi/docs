@@ -9,15 +9,15 @@
     <p class="lead">{{ .Description }}</p>
   </div>
 </section>
-{{ with site.GetPage "/products/dev/docs" }}{{ $dev := index $products.items "dev" }}
+{{ with site.GetPage "/products/cli/docs/develop" }}
 <section class="section section--tight">
   <div class="wrap">
     <a class="card card--link learn-env" href="{{ .RelPermalink }}">
-      <span class="hub-icon">{{ partial "icon.html" $dev.icon }}</span>
+      <span class="hub-icon">{{ partial "icon.html" "server" }}</span>
       <div>
         <p class="eyebrow">Your environment</p>
         <h3>Run InfraPI on your machine</h3>
-        <p>{{ $dev.summary }}</p>
+        <p>{{ .Description }}</p>
       </div>
     </a>
   </div>

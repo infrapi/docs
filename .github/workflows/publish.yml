@@ -46,16 +46,13 @@ jobs:
       - name: Check out cli docs
         uses: actions/checkout@v7
         with: { repository: infrapi/cli, ref: "${{ vars.DOCS_REF_CLI || 'main' }}", path: _repos/cli, sparse-checkout: docs }
-      - name: Check out dev docs
-        uses: actions/checkout@v7
-        with: { repository: infrapi/dev, ref: "${{ vars.DOCS_REF_DEV || 'main' }}", path: _repos/dev, sparse-checkout: docs }
 
       # Same check as `make check-repos`: a clear error instead of Hugo's
       # "invalid YAML delimiter" when a product's docs are not migrated.
       - name: Check product docs are portal-ready
         run: |
           bad=0
-          for r in kayra tofu-api lib dev cli; do
+          for r in kayra tofu-api lib cli; do
             f="_repos/$r/docs/index.md"
             if [ ! -f "$f" ]; then
               echo "::error file=$f::infrapi/$r ($(git -C _repos/$r rev-parse --abbrev-ref HEAD)) has no docs/index.md"; bad=1

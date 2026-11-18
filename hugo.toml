@@ -74,15 +74,11 @@ disableKinds = ["taxonomy", "term", "rss"]
   [[module.mounts]]
     source = "_repos/cli/docs"
     target = "content/products/cli/docs"
-    files = ["! index.md", "! assets/**"]
+    files = ["! index.md", "! develop/index.md", "! assets/**"]
   [[module.mounts]]
     source = "_repos/cli/docs/index.md"
     target = "content/products/cli/docs/_index.md"
-
+  # the dev stack's docs, a section of the cli's
   [[module.mounts]]
-    source = "_repos/dev/docs"
-    target = "content/products/dev/docs"
-    files = ["! index.md", "! assets/**"]
-  [[module.mounts]]
-    source = "_repos/dev/docs/index.md"
-    target = "content/products/dev/docs/_index.md"
+    source = "_repos/cli/docs/develop/index.md"
+    target = "content/products/cli/docs/develop/_index.md"
