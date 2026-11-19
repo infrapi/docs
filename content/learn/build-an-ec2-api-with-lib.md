@@ -435,21 +435,21 @@ explains each object.
 **infrapi-cli**
 
 ```bash
-infrapi-cli create system namespaces -d '{"name": "acme"}'
-infrapi-cli create authorization clustergroups \
+infrapi-cli create namespaces -d '{"name": "acme"}'
+infrapi-cli create clustergroups \
   -d "{\"name\": \"acme-admins\", $META, \"groups\": [\"sandbox-core-sysadmin\"]}"
-infrapi-cli create authorization clusterroles \
+infrapi-cli create clusterroles \
   -d "{\"name\": \"acme-admin-role\", $META, \"rules\": [{\"apis\": [\"catalog.infrapi.io\", \"authorization.infrapi.io\"], \"resources\": [\"*\"], \"verbs\": [\"*\"]}]}"
-infrapi-cli create authorization clusterrolebindings \
+infrapi-cli create clusterrolebindings \
   -d "{\"name\": \"acme-admin-binding\", $META, \"role\": \"acme-admin-role\", \"groups\": [\"acme-admins\"]}"
 
-infrapi-cli create catalog -n acme subscriptions -d '{"api": "compute.infrapi.io"}'
+infrapi-cli create subscriptions -n acme -d '{"api": "compute.infrapi.io"}'
 
-infrapi-cli create authorization -n acme groups \
+infrapi-cli create groups -n acme \
   -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-thetenant-admins\"]}"
-infrapi-cli create authorization -n acme roles \
+infrapi-cli create roles -n acme \
   -d "{\"name\": \"instances-admin\", $META, \"rules\": [{\"apis\": [\"compute.infrapi.io\"], \"resources\": [\"instances\"], \"verbs\": [\"*\"]}]}"
-infrapi-cli create authorization -n acme rolebindings \
+infrapi-cli create rolebindings -n acme \
   -d "{\"name\": \"devs-instances-admin\", $META, \"role\": \"instances-admin\", \"groups\": [\"devs\"]}"
 ```
 
@@ -484,11 +484,11 @@ As `jdoe`, a user of `acme`, through the gateway:
 **infrapi-cli**
 
 ```bash
-infrapi-cli create compute -n acme instances -d '{"name": "web-1", "size": "small"}' --context dev-jdoe
-infrapi-cli get compute -n acme instances web-1 -o json --context dev-jdoe
+infrapi-cli create instances -n acme -d '{"name": "web-1", "size": "small"}' --context dev-jdoe
+infrapi-cli get instances -n acme web-1 -o json --context dev-jdoe
 # {"name": "web-1", "created_at": "…", "size": "small", "id": "i-e91f1fd9eca53182d", "state": "running", "private_ip": "10.141.238.21", "zone": "eu-west-1a"}
-infrapi-cli get compute -n acme instances --context dev-jdoe
-infrapi-cli delete compute -n acme instances web-1 --context dev-jdoe
+infrapi-cli get instances -n acme --context dev-jdoe
+infrapi-cli delete instances -n acme web-1 --context dev-jdoe
 ```
 
 **curl**
@@ -509,11 +509,11 @@ Now try what the platform refuses:
 
 ```bash
 # a size the platform does not offer: 400, from the contract; EC2 is never called
-infrapi-cli create compute -n acme instances -d '{"name": "web-2", "size": "huge"}' --context dev-jdoe
+infrapi-cli create instances -n acme -d '{"name": "web-2", "size": "huge"}' --context dev-jdoe
 # Error: Invalid request (400): request body has an error: doesn't match schema #/components/schemas/Instance: Error at "/size": value is not one of the allowed values ["small","medium","large"]
 
 # someone acme does not know: 403, from Kayra; your code is never called
-infrapi-cli get compute -n acme instances --context dev-nobody
+infrapi-cli get instances -n acme --context dev-nobody
 # Error: Forbidden (403): you are not a member of namespace "acme": …
 ```
 
