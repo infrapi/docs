@@ -406,10 +406,10 @@ Then run the API in a third one, the SDK pointed at moto:
 ```bash
 export AWS_ENDPOINT_URL=http://localhost:5000 AWS_REGION=eu-west-1
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test
-make run
+infrapi-cli app run
 ```
 
-`make run` reads the settings `dev init` rendered from `dev.yaml`,
+`infrapi-cli app run` reads the settings `dev init` rendered from `dev.yaml`,
 `.infrapi-dev/app.env`: infrapi/lib's, and `COMPUTE_AUTH_URL`, Kayra
 through the gateway.
 
@@ -536,7 +536,7 @@ curl -s $API -H "Authorization: Bearer $NOBODY"
 > [!WARNING]
 > This creates real, billed instances. Terminate them when you are done.
 
-Stop `make run`, unset `AWS_ENDPOINT_URL` and the test keys, then use your
+Stop `infrapi-cli app run`, unset `AWS_ENDPOINT_URL` and the test keys, then use your
 usual AWS credentials. The region needs a default VPC, since `RunInstances`
 gets no subnet here. The credentials need `ec2:RunInstances`,
 `ec2:CreateTags`, `ec2:DescribeInstances`, `ec2:TerminateInstances` and
@@ -545,7 +545,7 @@ gets no subnet here. The credentials need `ec2:RunInstances`,
 ```bash
 unset AWS_ENDPOINT_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
 export AWS_PROFILE=my-sandbox AWS_REGION=eu-west-1
-make run
+infrapi-cli app run
 ```
 
 The calls above work unchanged.
