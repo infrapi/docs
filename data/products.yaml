@@ -32,8 +32,8 @@ items:
     version: v0.3   # fallback only: the portal shows the latest GitHub release
     status: early
     icon: agent
-    tagline: One MCP endpoint for AI agents, authorized per tenant by Kayra.
-    summary: Several MCP servers behind one endpoint, every tool scoped to a tenant, every call checked against Kayra and made with the tenant's credential.
+    tagline: One MCP endpoint for AI agents, every call authorized by Kayra in a namespace.
+    summary: Several MCP servers behind one endpoint, every tool scoped to a namespace, every call checked against Kayra and made with the caller's token or the namespace's credential.
 
   lib:
     name: lib
