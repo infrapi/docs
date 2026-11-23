@@ -49,7 +49,7 @@ steps:
 why:
   - icon: puzzle
     title: Composable
-    text: Adopt one piece at a time — tofu-api alone in front of one product, Kayra for tenancy and RBAC, lib for your own services.
+    text: Adopt one piece at a time — tofu-api alone in front of one product, Kayra for tenancy and RBAC, ulgen for AI agents, lib for your own services.
   - icon: contract
     title: Contract-first
     text: Every API serves its OpenAPI contract and rejects any request that does not match it, before a handler runs.

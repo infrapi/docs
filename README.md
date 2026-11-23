@@ -20,7 +20,8 @@ mounts those folders at build time; nothing is copied or committed here.
 
 ```
 infrapi/kayra    ──┐  push to main touching docs/**, or a release (CI `notify` job)
-infrapi/tofu-api ──┼──► repository_dispatch (docs-updated) ──┬─► infrapi/docs: Publish
+infrapi/tofu-api ──┤
+infrapi/ulgen    ──┼──► repository_dispatch (docs-updated) ──┬─► infrapi/docs: Publish
 infrapi/lib      ──┘          (+ nightly, + every push here)  │    ├─ checkout each repo's docs/ into _repos/
                                                               │    ├─ scripts/releases.sh → data/releases.yaml
                                                               │    ├─ hugo --panicOnWarning
@@ -53,7 +54,7 @@ infrapi/lib      ──┘          (+ nightly, + every push here)  │    ├�
 Requires Hugo ≥ 0.158 (`go install github.com/gohugoio/hugo@latest` works).
 
 ```bash
-make link     # use your checkouts in ../kayra, ../tofu-api, ../lib (LOCAL=.. by default)
+make link     # use your checkouts in ../kayra, ../tofu-api, ../ulgen, ../lib (LOCAL=.. by default)
 make serve    # http://localhost:1313/docs/ — edits in ../kayra/docs reload live
 make build    # as CI: fails on any broken link or anchor
 make fetch    # instead of link: the repos' main branches from GitHub

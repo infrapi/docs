@@ -1,8 +1,8 @@
 # One entry per product. Drives the landing page, the navigation, the hub
 # pages and the docs pages' "edit on GitHub" links.
-order: [kayra, tofu-api, lib]
+order: [kayra, tofu-api, ulgen, lib]
 # the Docs menus: the products', then docs that are not a product's
-docs: [kayra, cli, tofu-api, lib]
+docs: [kayra, cli, tofu-api, ulgen, lib]
 
 items:
   kayra:
@@ -24,6 +24,16 @@ items:
     icon: api
     tagline: Any OpenTofu provider as a REST API, and as MCP tools for AI agents.
     summary: An OpenAPI contract generated from the provider's schemas, MCP tools generated from the contract, rules in one YAML file per provider, no code per resource.
+
+  ulgen:
+    name: ulgen
+    repo: infrapi/ulgen
+    branch: main
+    version: v0.3   # fallback only: the portal shows the latest GitHub release
+    status: early
+    icon: agent
+    tagline: One MCP endpoint for AI agents, authorized per tenant by Kayra.
+    summary: Several MCP servers behind one endpoint, every tool scoped to a tenant, every call checked against Kayra and made with the tenant's credential.
 
   lib:
     name: lib

@@ -72,6 +72,14 @@ disableKinds = ["taxonomy", "term", "rss"]
     target = "content/products/lib/docs/_index.md"
 
   [[module.mounts]]
+    source = "_repos/ulgen/docs"
+    target = "content/products/ulgen/docs"
+    files = ["! index.md", "! assets/**"]
+  [[module.mounts]]
+    source = "_repos/ulgen/docs/index.md"
+    target = "content/products/ulgen/docs/_index.md"
+
+  [[module.mounts]]
     source = "_repos/cli/docs"
     target = "content/products/cli/docs"
     files = ["! index.md", "! develop/index.md", "! assets/**"]
