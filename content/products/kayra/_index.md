@@ -2,7 +2,7 @@
 title: Kayra
 layout: product
 product: kayra
-description: Kayra says who a caller is, which namespace — tenant — they act in, and what RBAC lets them do there. It keeps the catalog of the platform's APIs and which tenant is subscribed to which, and leaves each API to the team that owns it.
+description: Kayra says who a caller is, which namespace they act in, and what RBAC lets them do there. It keeps the catalog of the platform's APIs and which namespace is subscribed to which, and leaves each API to the team that owns it.
 headline: Identity, tenancy and access control for your internal platform.
 start: getting-started
 
@@ -17,9 +17,9 @@ features:
   - title: RBAC
     text: "`Group`, `Role`, `RoleBinding`, cluster- and namespace-scoped, gated by real directory groups rather than a synced list."
   - title: Namespaces
-    text: The namespace *is* the tenant — not two things joined by a name.
+    text: The unit of isolation of every API's resources, RBAC and subscriptions. A team or a customer owns one or several, [as in Kubernetes](/products/kayra/docs/architecture/multi-tenancy/).
   - title: API catalog
-    text: Register API groups and their owners; subscribe tenants to them; a reconciler turns subscriptions active.
+    text: Register API groups and their owners; subscribe namespaces to them; a reconciler turns subscriptions active.
 
 facts:
   - k: Storage

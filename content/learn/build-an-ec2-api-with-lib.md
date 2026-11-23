@@ -1,6 +1,6 @@
 ---
 title: Build an EC2 instance API
-description: From nothing to a tenant creating EC2 instances through your own API - a Go project from its contract with infrapi-cli, the AWS SDK for Go v2 behind it, Kayra authorizing every call. Runs against a local AWS emulator and a local InfraPI, no AWS account needed.
+description: From nothing to a namespace's user creating EC2 instances through your own API - a Go project from its contract with infrapi-cli, the AWS SDK for Go v2 behind it, Kayra authorizing every call. Runs against a local AWS emulator and a local InfraPI, no AWS account needed.
 products: [lib, kayra]
 level: Intermediate
 duration: 45 min
@@ -14,11 +14,11 @@ yourself: `infrapi-cli app` gives it a contract, its Go code and its CI,
 health checks and metrics as every other InfraPI API, and you call AWS
 with the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2).
 
-In this tutorial you build `compute`, an API that lets each tenant
-(namespace) create, list and terminate its own EC2 instances, in three
+In this tutorial you build `compute`, an API that lets each namespace
+create, list and terminate its own EC2 instances, in three
 sizes the platform chooses. You run it against
 [moto](https://github.com/getmoto/moto), a local emulator of the AWS APIs,
-behind a local InfraPI: a tenant's user calls it, authorized by Kayra.
+behind a local InfraPI: a namespace's user calls it, authorized by Kayra.
 
 **You will need:** Go 1.27.3 or later, podman or docker,
 [infrapi-cli](../products/cli/docs/getting-started.md#1-install), `make`,
@@ -57,7 +57,7 @@ infrapi-cli dev contexts
 Kayra, its reconciler, etcd and APISIX run in containers, configured by
 `dev.yaml`. `dev contexts` saves three `infrapi-cli` contexts on the
 gateway, `http://localhost:9080`: `dev-admin`, the platform's admin and the
-current one, `dev-jdoe`, a user of the tenant you create below, and
+current one, `dev-jdoe`, a user of the namespace you create below, and
 `dev-nobody`. The `curl` examples read their tokens:
 
 ```bash
@@ -380,8 +380,8 @@ func view(i types.Instance) api.Instance {
 The caller sends a name and a size. Everything else is the platform's
 decision: the AMI is the latest Amazon Linux 2023, read from the public SSM
 parameter AWS keeps up to date, and the instance is tagged with the
-namespace from the URL, never from the body: a tenant cannot create an
-instance for another one. Who may call which operation in which namespace,
+namespace from the URL, never from the body: a caller cannot create an
+instance in another namespace. Who may call which operation in which namespace,
 Kayra decides before your code runs.
 
 `instances_test.go`, also written by `app add`, checks the 501s: remove it,
@@ -413,7 +413,7 @@ infrapi-cli app run
 `.infrapi-dev/app.env`: infrapi/lib's, and `COMPUTE_AUTH_URL`, Kayra
 through the gateway.
 
-## 7. Register it, onboard a tenant
+## 7. Register it, create a namespace
 
 As `dev-admin`, register the API: the gateway routes
 `/apis/compute.infrapi.io/*` to it, and Kayra reads its contract and learns
@@ -426,10 +426,10 @@ infrapi-cli apis --api-group compute
 # instances  compute    compute.infrapi.io  true        create,delete,get,list
 ```
 
-Then a tenant, `acme`: its namespace, its subscription to the API, and the
-RBAC that lets its users, the group `sandbox-thetenant-admins` that `jdoe`
+Then a namespace, `acme`, its subscription to the API, and the
+RBAC that lets its users, the group `sandbox-acme-admins` that `jdoe`
 is in, manage its instances.
-[Develop an API](../products/cli/docs/develop/develop-an-api.md#5-onboard-a-tenant)
+[Develop an API](../products/cli/docs/develop/develop-an-api.md#5-create-a-namespace)
 explains each object.
 
 **infrapi-cli**
@@ -446,7 +446,7 @@ infrapi-cli create clusterrolebindings \
 infrapi-cli create subscriptions -n acme -d '{"api": "compute.infrapi.io"}'
 
 infrapi-cli create groups -n acme \
-  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-thetenant-admins\"]}"
+  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-acme-admins\"]}"
 infrapi-cli create roles -n acme \
   -d "{\"name\": \"instances-admin\", $META, \"rules\": [{\"apis\": [\"compute.infrapi.io\"], \"resources\": [\"instances\"], \"verbs\": [\"*\"]}]}"
 infrapi-cli create rolebindings -n acme \
@@ -470,7 +470,7 @@ curl -s -X POST $AUTHZ/clusterrolebindings "${H[@]}" \
 curl -s -X POST $GW/apis/catalog.infrapi.io/v1/namespaces/acme/subscriptions "${H[@]}" -d '{"api": "compute.infrapi.io"}'
 
 curl -s -X POST $AUTHZ/namespaces/acme/groups "${H[@]}" \
-  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-thetenant-admins\"]}"
+  -d "{\"name\": \"devs\", $META, \"groups\": [\"sandbox-acme-admins\"]}"
 curl -s -X POST $AUTHZ/namespaces/acme/roles "${H[@]}" \
   -d "{\"name\": \"instances-admin\", $META, \"rules\": [{\"apis\": [\"compute.infrapi.io\"], \"resources\": [\"instances\"], \"verbs\": [\"*\"]}]}"
 curl -s -X POST $AUTHZ/namespaces/acme/rolebindings "${H[@]}" \
@@ -555,9 +555,9 @@ The calls above work unchanged.
 - Ship it: `make snapshot` builds what a release would, archives, deb and
   rpm packages and the image; the CI, `app init --ci github` or `gitlab`,
   releases on a tag. See [Ship it](../products/cli/docs/develop/develop-an-api.md#11-ship-it).
-- Give each tenant its own AWS account or role from Vault:
+- Give each namespace its own AWS account or role from Vault:
   [vault](../products/lib/docs/packages/vault.md).
 - Call this API from another service:
   [client](../products/lib/docs/packages/client.md).
-- Provision something per tenant when it subscribes: Kayra's
+- Provision something per namespace when it subscribes: Kayra's
   [subscriptions](../products/kayra/docs/architecture/subscriptions.md).

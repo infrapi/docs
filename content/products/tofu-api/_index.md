@@ -18,7 +18,7 @@ features:
   - title: Rules in YAML
     text: Values the service sets, defaults, patterns, enums and hidden attributes, with CEL expressions.
   - title: Credentials per namespace
-    text: A provider process per namespace, configured from Vault, so a tenant reaches only what its credentials allow.
+    text: A provider process per namespace, configured from Vault, so a namespace reaches only what its credentials allow.
   - title: Contract enforced
     text: Requests that do not match are a 400 before the provider is called. Errors are RFC 9457 problems.
   - title: Native MCP for AI agents

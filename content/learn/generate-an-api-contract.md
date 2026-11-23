@@ -118,6 +118,6 @@ called. A misspelt key, such as `Enum`, stops `gen` with an error.
 ## Next steps
 
 - Serve it for real — it creates real, billed instances: [Getting started](../products/tofu-api/docs/getting-started.md) and [Configuration](../products/tofu-api/docs/configuration.md).
-- Give each tenant its own AWS credentials from Vault: [Namespaces](../products/tofu-api/docs/namespaces.md).
+- Give each namespace its own AWS credentials from Vault: [Namespaces](../products/tofu-api/docs/namespaces.md).
 - Require a token and RBAC through Kayra: [Authentication](../products/tofu-api/docs/authentication.md).
 - Defaults, values set by the service, error mapping and CEL expressions: [Rules](../products/tofu-api/docs/rules.md).

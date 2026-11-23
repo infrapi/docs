@@ -55,7 +55,7 @@ why:
     text: Every API serves its OpenAPI contract and rejects any request that does not match it, before a handler runs.
   - icon: tenants
     title: Multi-tenant by design
-    text: Namespaces are the tenants. With tofu-api each one runs with its own credentials from Vault, so isolation comes from the credentials.
+    text: Each tenant, a team or a customer, owns its namespaces. With tofu-api each namespace runs with its own credentials from Vault, so isolation comes from the credentials.
   - icon: server
     title: Plain to operate
     text: Single Go binaries, systemd units, RPM and DEB packages, Prometheus metrics and OpenTelemetry traces. No cluster required.

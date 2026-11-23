@@ -13,7 +13,7 @@ items:
     status: preview
     icon: shield
     tagline: Identity, namespaces and RBAC for your platform.
-    summary: Who callers are, which tenant they act in, what they may do there, and which APIs each tenant is subscribed to.
+    summary: Who callers are, which namespace they act in, what they may do there, and which APIs each namespace is subscribed to.
 
   tofu-api:
     name: tofu-api
