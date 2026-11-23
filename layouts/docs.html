@@ -4,7 +4,7 @@
 {{ $p := index hugo.Data.products.items $slug }}
 {{ $entries := partial "docs-tree.html" $slug }}
 {{ $flat := slice }}
-{{ range $entries }}{{ with .page }}{{ $flat = $flat | append . }}{{ else }}{{ range .pages }}{{ $flat = $flat | append . }}{{ end }}{{ end }}{{ end }}
+{{ range $entries }}{{ with .page }}{{ $flat = $flat | append . }}{{ else }}{{ $children := .children }}{{ range .pages }}{{ $flat = $flat | append . }}{{ range index $children .Path }}{{ $flat = $flat | append . }}{{ end }}{{ end }}{{ end }}{{ end }}
 
 <div class="docs-layout">
   <aside class="docs-sidebar" aria-label="{{ $p.name }} documentation">
@@ -21,12 +21,17 @@
             {{ with .page }}
             <li><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ if .IsSection }}Overview{{ else }}{{ .Title }}{{ end }}</a></li>
             {{ else }}
-            {{ $open := false }}{{ range .pages }}{{ if eq . $ }}{{ $open = true }}{{ end }}{{ end }}
+            {{ $open := false }}{{ $children := .children }}{{ range .pages }}{{ if eq . $ }}{{ $open = true }}{{ end }}{{ range index $children .Path }}{{ if eq . $ }}{{ $open = true }}{{ end }}{{ end }}{{ end }}
             <li class="docs-group">
               <details{{ if or $open (le (len .pages) 6) }} open{{ end }}>
                 <summary>{{ .group }}</summary>
                 <ul>
-                  {{ range .pages }}<li><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ .Title }}</a></li>{{ end }}
+                  {{ range .pages }}
+                  {{ $kids := index $children .Path }}
+                  <li{{ with $kids }} class="docs-sub"{{ end }}><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ .Title }}</a>
+                    {{ with $kids }}<ul>{{ range . }}<li><a href="{{ .RelPermalink }}"{{ if eq . $ }} aria-current="page"{{ end }}>{{ .Title }}</a></li>{{ end }}</ul>{{ end }}
+                  </li>
+                  {{ end }}
                 </ul>
               </details>
             </li>

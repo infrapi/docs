@@ -314,6 +314,7 @@ a.chip:hover { color: var(--text); }
 .docs-group details > summary::after { content: ""; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
 .docs-group details[open] > summary::after { transform: rotate(45deg); }
 .docs-group ul { border-left: 1px solid var(--edge-soft); margin-left: 10px !important; padding-left: 6px !important; }
+.docs-group .docs-sub > ul { margin: 2px 0 4px 14px !important; font-size: 13.5px; }
 
 .docs-article { min-width: 0; padding: 32px 0 0; }
 .docs-toc { position: sticky; top: calc(var(--header-h) + 28px); align-self: start; max-height: calc(100vh - var(--header-h) - 56px); overflow-y: auto; padding-top: 4px; font-size: 13.5px; }
