@@ -29,11 +29,11 @@ items:
     name: ulgen
     repo: infrapi/ulgen
     branch: main
-    version: v0.3   # fallback only: the portal shows the latest GitHub release
+    version: v0.5   # fallback only: the portal shows the latest GitHub release
     status: early
     icon: agent
-    tagline: One MCP endpoint for AI agents, every call authorized by Kayra in a namespace.
-    summary: Several MCP servers behind one endpoint, every tool scoped to a namespace, every call checked against Kayra and made with the caller's token or the namespace's credential.
+    tagline: One MCP endpoint for AI agents, in front of every API of the platform.
+    summary: The APIs found in Kayra's catalog, their tools behind one endpoint after one login, every call made as the caller and checked by its API.
 
   lib:
     name: lib
