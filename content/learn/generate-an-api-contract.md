@@ -12,7 +12,7 @@ you write the file that exposes EC2 instances from the `hashicorp/aws`
 provider, generate the API's contract, and shape it with a rule — without an
 AWS account: `tofu-api gen` only needs the provider binary, no credentials.
 
-**You will need:** Go 1.27.3 or later, `git`, `jq`, network access, and
+**You will need:** Go 1.27.4 or later, `git`, `jq`, network access, and
 [OpenTofu](https://opentofu.org) or Terraform in your `PATH` (the
 repository's script uses it to download and verify the provider).
 

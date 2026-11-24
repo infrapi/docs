@@ -23,7 +23,7 @@ features:
 
 facts:
   - k: Requires
-    v: Go 1.27.3 or later
+    v: Go 1.27.4 or later
   - k: Install
     v: "`go get github.com/infrapi/lib`"
 

@@ -20,7 +20,7 @@ sizes the platform chooses. You run it against
 [moto](https://github.com/getmoto/moto), a local emulator of the AWS APIs,
 behind a local InfraPI: a namespace's user calls it, authorized by Kayra.
 
-**You will need:** Go 1.27.3 or later, podman or docker,
+**You will need:** Go 1.27.4 or later, podman or docker,
 [infrapi-cli](../products/cli/docs/getting-started.md#1-install), `make`,
 `curl`, and Python 3 (`pip`) or podman/docker for moto.
 
