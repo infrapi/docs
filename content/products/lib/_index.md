@@ -25,7 +25,7 @@ facts:
   - k: Requires
     v: Go 1.27.4 or later
   - k: Install
-    v: "`go get github.com/infrapi/lib`"
+    v: "`go get github.com/infrapi/lib@v0.21.0`"
 
 cascade:
   - target:
