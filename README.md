@@ -66,8 +66,9 @@ make fetch    # instead of link: the repos' main branches from GitHub
 2. An entry in [`data/products.yaml`](data/products.yaml).
 3. Its hub: `content/products/<slug>/_index.md` (copy one; set `product: <slug>` and keep the `cascade`).
 4. A checkout step in [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
-5. In the product repo, [`templates/notify-docs.yml`](templates/notify-docs.yml) → `.github/workflows/`,
-   and in its `ci.yml` a `notify` job after the release job (see infrapi/lib's).
+5. In the product repo, its `ci.yml` calls [infrapi/ci](https://github.com/infrapi/ci)'s Go workflow
+   with `notify-docs: true` (see infrapi/lib's): it dispatches here after a release, a push to `main`
+   changing `docs/`, or a manual run.
 
 ## Setup, once
 

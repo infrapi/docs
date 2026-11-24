@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-  # sent by a product repository's notify-docs workflow when its docs/ change
+  # sent by a product repository's CI (infrapi/ci's Go workflow, notify-docs) when its docs/ change
   # or when it publishes a release
   repository_dispatch:
     types: [docs-updated]
