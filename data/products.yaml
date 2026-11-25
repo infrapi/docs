@@ -26,7 +26,7 @@ items:
     summary: An OpenAPI contract generated from the provider's schemas, MCP tools generated from the contract, rules in one YAML file per provider, no code per resource.
 
   ulgen:
-    name: ulgen
+    name: Ülgen
     repo: infrapi/ulgen
     branch: main
     version: v0.5   # fallback only: the portal shows the latest GitHub release
