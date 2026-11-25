@@ -477,6 +477,72 @@ curl -s -X POST $AUTHZ/namespaces/acme/rolebindings "${H[@]}" \
   -d "{\"name\": \"devs-instances-admin\", $META, \"role\": \"instances-admin\", \"groups\": [\"devs\"]}"
 ```
 
+**OpenTofu/Terraform**
+
+```hcl
+locals {
+  metadata = { namespace = "acme", region = "eu-west-1", platform = "sandbox" }
+}
+
+resource "kayra_namespace" "acme" {
+  name = "acme"
+}
+
+resource "kayra_cluster_group" "acme_admins" {
+  name     = "acme-admins"
+  metadata = local.metadata
+  groups   = ["sandbox-core-sysadmin"]
+}
+
+resource "kayra_cluster_role" "acme_admin_role" {
+  name     = "acme-admin-role"
+  metadata = local.metadata
+  rules = [{
+    apis      = ["catalog.infrapi.io", "authorization.infrapi.io"]
+    resources = ["*"]
+    verbs     = ["*"]
+  }]
+}
+
+resource "kayra_cluster_role_binding" "acme_admin_binding" {
+  name     = "acme-admin-binding"
+  metadata = local.metadata
+  role     = kayra_cluster_role.acme_admin_role.name
+  groups   = [kayra_cluster_group.acme_admins.name]
+}
+
+resource "kayra_subscription" "compute" {
+  namespace = kayra_namespace.acme.name
+  api       = "compute.infrapi.io"
+}
+
+resource "kayra_group" "devs" {
+  namespace = kayra_namespace.acme.name
+  name      = "devs"
+  metadata  = local.metadata
+  groups    = ["sandbox-acme-admins"]
+}
+
+resource "kayra_role" "instances_admin" {
+  namespace = kayra_namespace.acme.name
+  name      = "instances-admin"
+  metadata  = local.metadata
+  rules = [{
+    apis      = ["compute.infrapi.io"]
+    resources = ["instances"]
+    verbs     = ["*"]
+  }]
+}
+
+resource "kayra_role_binding" "devs_instances_admin" {
+  namespace = kayra_namespace.acme.name
+  name      = "devs-instances-admin"
+  metadata  = local.metadata
+  role      = kayra_role.instances_admin.name
+  groups    = [kayra_group.devs.name]
+}
+```
+
 ## 8. Call it
 
 As `jdoe`, a user of `acme`, through the gateway:
