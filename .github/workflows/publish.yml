@@ -31,7 +31,7 @@ jobs:
 
       # Each product's docs/ only, at the tip of main by default. To publish
       # another branch of a product (e.g. before its docs are merged), set the
-      # repository variable DOCS_REF_KAYRA, DOCS_REF_TOFU_API, DOCS_REF_ULGEN, DOCS_REF_LIB, DOCS_REF_DEV or DOCS_REF_CLI
+      # repository variable DOCS_REF_KAYRA, DOCS_REF_TOFU_API, DOCS_REF_ULGEN, DOCS_REF_LIB, DOCS_REF_DEV, DOCS_REF_CLI or DOCS_REF_TERRAFORM_PROVIDER_KAYRA
       # (Settings > Secrets and variables > Actions > Variables).
       # Public repositories: no token needed. For a private one, add `token:`.
       - name: Check out kayra docs
@@ -49,13 +49,16 @@ jobs:
       - name: Check out cli docs
         uses: actions/checkout@v7
         with: { repository: infrapi/cli, ref: "${{ vars.DOCS_REF_CLI || 'main' }}", path: _repos/cli, sparse-checkout: docs }
+      - name: Check out terraform-provider-kayra docs
+        uses: actions/checkout@v7
+        with: { repository: infrapi/terraform-provider-kayra, ref: "${{ vars.DOCS_REF_TERRAFORM_PROVIDER_KAYRA || 'main' }}", path: _repos/terraform-provider-kayra, sparse-checkout: docs }
 
       # Same check as `make check-repos`: a clear error instead of Hugo's
       # "invalid YAML delimiter" when a product's docs are not migrated.
       - name: Check product docs are portal-ready
         run: |
           bad=0
-          for r in kayra tofu-api ulgen lib cli; do
+          for r in kayra tofu-api ulgen lib cli terraform-provider-kayra; do
             f="_repos/$r/docs/index.md"
             if [ ! -f "$f" ]; then
               echo "::error file=$f::infrapi/$r ($(git -C _repos/$r rev-parse --abbrev-ref HEAD)) has no docs/index.md"; bad=1

@@ -54,7 +54,7 @@ infrapi/lib      ──┘          (+ nightly, + every push here)  │    ├�
 Requires Hugo ≥ 0.158 (`go install github.com/gohugoio/hugo@latest` works).
 
 ```bash
-make link     # use your checkouts in ../kayra, ../tofu-api, ../ulgen, ../lib (LOCAL=.. by default)
+make link     # use your checkouts in ../kayra, ../tofu-api, ../ulgen, ../lib, ../cli, ../terraform-provider-kayra (LOCAL=.. by default)
 make serve    # http://localhost:1313/docs/ — edits in ../kayra/docs reload live
 make build    # as CI: fails on any broken link or anchor
 make fetch    # instead of link: the repos' main branches from GitHub

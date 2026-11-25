@@ -2,7 +2,7 @@
 # pages and the docs pages' "edit on GitHub" links.
 order: [kayra, tofu-api, ulgen, lib]
 # the Docs menus: the products', then docs that are not a product's
-docs: [kayra, cli, tofu-api, ulgen, lib]
+docs: [kayra, cli, terraform-provider-kayra, tofu-api, ulgen, lib]
 
 items:
   kayra:
@@ -58,3 +58,16 @@ items:
     icon: terminal
     tagline: InfraPI's command line.
     summary: Log in to Kayra and call its API, create an API project and grow it from its contract, and run a local dev stack, from one binary, infrapi-cli.
+
+  # the OpenTofu/Terraform provider of Kayra: docs only (in `docs`, not in
+  # `order`), no hub page; its docs/ is also the registries' (generated)
+  terraform-provider-kayra:
+    name: Terraform provider
+    repo: infrapi/terraform-provider-kayra
+    branch: main
+    version: v0.1   # fallback only: the portal shows the latest GitHub release
+    hub: false
+    status: preview
+    icon: blocks
+    tagline: Kayra's objects as OpenTofu and Terraform resources.
+    summary: Namespaces, API registrations and subscriptions, the RBAC, service accounts and tokens, one attribute per property of Kayra's contracts.

@@ -90,3 +90,11 @@ disableKinds = ["taxonomy", "term", "rss"]
   [[module.mounts]]
     source = "_repos/cli/docs/develop/index.md"
     target = "content/products/cli/docs/develop/_index.md"
+
+  [[module.mounts]]
+    source = "_repos/terraform-provider-kayra/docs"
+    target = "content/products/terraform-provider-kayra/docs"
+    files = ["! index.md", "! assets/**"]
+  [[module.mounts]]
+    source = "_repos/terraform-provider-kayra/docs/index.md"
+    target = "content/products/terraform-provider-kayra/docs/_index.md"
